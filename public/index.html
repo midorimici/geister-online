@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang='ja'>
+    <head>
+        <meta charset='UTF-8'>
+        <meta name='viewport' content='width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1, user-scalable=no'>
+        <title>Geister Online</title>
+        <link rel='stylesheet' href='./static/style.css?12282253'>
+    </head>
+    <body>
+        <div id='container'>
+            <div id='settings'>
+                <p>ルーム番号と参加方法を指定してください。</p>
+                <form id='form'>
+                    <div>
+                        <label>
+                            ルーム
+                            <input id='room-input' type='number' required min='1' max='100' name='room'>
+                        </label>
+                    </div>
+                    <div>
+                        <label>
+                            参加方法
+                            <label><input type='radio' name='role' required value='play'>対戦する</label>
+                            <label><input type='radio' name='role' value='watch'>観戦する</label>
+                        </label>
+                    </div>
+                    <div id='username-div'>
+                        <label>
+                            ユーザー名
+                            <input id='name-input' type='text' name='username'>
+                        </label>
+                    </div>
+                    <input id='submit-btn' type='submit' value='GO'>
+                </form>
+                <p id='message'></p>
+            </div>
+        </div>
+        <canvas id='canvas'></canvas>
+        <script src='/socket.io/socket.io.js'></script>
+        <script src='./bundle.js'></script>
+    </body>
+</html>

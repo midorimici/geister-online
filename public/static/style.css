@@ -1,0 +1,58 @@
+body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+#container {
+    margin-top: 3rem;
+    width: 24rem;
+}
+
+#room-input, #name-input {
+    margin: .4rem;
+    padding: .4rem;
+    border-radius: .4rem;
+}
+
+#username-div {
+    visibility: hidden;
+}
+
+#form {
+    height: 12rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+#submit-btn {
+    padding: .4rem 1rem;
+    border-radius: .4rem;
+    background-color: white;
+    border: solid 2px #333333;
+    cursor: pointer;
+    transition: .5s;
+}
+
+#submit-btn:hover {
+    background-color: #dddddd;
+}
+
+#canvas-container {
+    position: relative;
+    height: 0;
+    overflow: hidden;
+    padding-top: 100%;
+}
+
+@media (max-width: 640px) {
+    #container {
+        width: 90%;
+    }
+
+    #canvas {
+        width: 90%;
+        height: 90%;
+    }
+}
