@@ -1,4 +1,4 @@
-import config from './config';
+import config, { Vec } from './config';
 
 export default class Draw {
     private canvas: HTMLCanvasElement;
@@ -17,6 +17,7 @@ export default class Draw {
         this.ctx = canvas.getContext('2d');
         this.square_size = canvas.width*3/20;
         this.margin = canvas.width/20;
+        this.piece_size = canvas.width/10;
     }
 
     // アイボリーで画面全体を塗りつぶす
@@ -62,12 +63,12 @@ export default class Draw {
         ctx.lineWidth = 2;
         ctx.beginPath();
         for (let i: number = 0; i <= row; i++) {
-            ctx.moveTo(...config.vsum(coord, [0, square_size*i]));
-            ctx.lineTo(...config.vsum(coord, [square_size*col, square_size*i]));
+            ctx.moveTo(...new Vec(coord).add([0, square_size*i]));
+            ctx.lineTo(...new Vec(coord).add([square_size*col, square_size*i]));
         }
         for (let i: number = 0; i <= col; i++) {
-            ctx.moveTo(...config.vsum(coord, [square_size*i, 0]));
-            ctx.lineTo(...config.vsum(coord, [square_size*i, square_size*row]));
+            ctx.moveTo(...new Vec(coord).add([square_size*i, 0]));
+            ctx.lineTo(...new Vec(coord).add([square_size*i, square_size*row]));
         }
         ctx.closePath();
         ctx.stroke();
