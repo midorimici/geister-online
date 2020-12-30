@@ -5,6 +5,7 @@ export default class Draw {
     private ctx: CanvasRenderingContext2D;
     private square_size: number;
     private margin: number;
+    private piece_size: number;
 
     constructor(canvas: HTMLCanvasElement) {
         const cw: number = document.documentElement.clientWidth;
@@ -63,15 +64,47 @@ export default class Draw {
         ctx.lineWidth = 2;
         ctx.beginPath();
         for (let i: number = 0; i <= row; i++) {
-            ctx.moveTo(...new Vec(coord).add([0, square_size*i]));
-            ctx.lineTo(...new Vec(coord).add([square_size*col, square_size*i]));
+            ctx.moveTo(...new Vec(coord).add([0, square_size*i]).val());
+            ctx.lineTo(...new Vec(coord).add([square_size*col, square_size*i]).val());
         }
         for (let i: number = 0; i <= col; i++) {
-            ctx.moveTo(...new Vec(coord).add([square_size*i, 0]));
-            ctx.lineTo(...new Vec(coord).add([square_size*i, square_size*row]));
+            ctx.moveTo(...new Vec(coord).add([square_size*i, 0]).val());
+            ctx.lineTo(...new Vec(coord).add([square_size*i, square_size*row]).val());
         }
         ctx.closePath();
         ctx.stroke();
+    }
+
+    // 駒を描く
+    private piece(color: string, pos: [number, number], rev: boolean) {
+        const ctx = this.ctx;
+        const padding: number = (this.square_size - this.piece_size)/2;
+        const coord: [number, number] = new Vec(pos).mul(this.square_size)
+            .add([this.margin + padding, this.margin + padding]).val();
+        const piece_size: number = this.piece_size;
+        let points: [
+            [number, number],
+            [number, number],
+            [number, number]
+        ];
+        if (rev) {
+            // 相手の駒は逆転して描く
+            points = [coord,
+                new Vec(coord).add([piece_size, 0]).val(),
+                new Vec(coord).add([piece_size/2, piece_size]).val()];
+        } else {
+            points = [new Vec(coord).add([0, piece_size]).val(),
+                new Vec(coord).add([piece_size, piece_size]).val(),
+                new Vec(coord).add([piece_size/2, 0]).val()];
+        }
+
+        ctx.fillStyle = color;
+        ctx.beginPath();
+        ctx.moveTo(...points[0]);
+        ctx.lineTo(...points[1]);
+        ctx.lineTo(...points[2]);
+        ctx.closePath();
+        ctx.fill();
     }
 
     // 駒の配置を決める画面（対戦者のみ）

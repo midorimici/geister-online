@@ -12,7 +12,15 @@ export class Vec {
         this.v = v;
     }
 
-    add(v: [number, number]): [number, number] {
-        return [v[0] + this.v[0], v[1] + this.v[1]];
+    val(): [number, number] {
+        return this.v;
+    }
+
+    add(v: [number, number]): Vec {
+        return new Vec([v[0] + this.v[0], v[1] + this.v[1]]);
+    }
+
+    mul(n: number): Vec {
+        return new Vec([n*this.v[0], n*this.v[1]]);
     }
 }
