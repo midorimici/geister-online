@@ -80,7 +80,7 @@ export default class Draw {
         const ctx = this.ctx;
         const padding: number = (this.square_size - this.piece_size)/2;
         const coord: [number, number] = new Vec(pos).mul(this.square_size)
-            .add([this.margin + padding, this.margin + padding]).val();
+            .add(this.margin + padding).val();
         const piece_size: number = this.piece_size;
         let points: [
             [number, number],
@@ -107,11 +107,29 @@ export default class Draw {
         ctx.fill();
     }
 
+    // ボタンを描く
+    private button(coord: [number, number], size: [number, number],
+            disabled: boolean) {
+        const ctx = this.ctx;
+
+        ctx.fillStyle = disabled ?
+            'rgb(160, 140, 120)' : 'rgb(200, 180, 160)';
+        ctx.fillRect(...coord, ...size);
+
+        ctx.font = `${this.canvas.width/30}px Meiryo`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillStyle = config.dark;
+        ctx.fillText('OK',
+            ...new Vec(coord).add(new Vec(size).div(2).val()).val());
+    }
+
     // 駒の配置を決める画面（対戦者のみ）
     decidePiecePlace(turn: 0 | 1) {
         this.clearCanvas();
         const ctx = this.ctx;
         const csize = this.canvas.width;
+
         const textSize: number = csize/40;
         const text1: string = `あなたは${turn === 0 ? '先' : '後'}手だよ。`
         const text2: string = '駒の配置を決めてね（↓自分側　↑相手側）';
@@ -127,5 +145,6 @@ export default class Draw {
             this.margin + this.square_size,
             this.margin + 2*this.square_size];
         this.grid(lefttop, 4, 2);
+        this.button([csize*5/6, csize*5/6], [csize/8, csize/12], true);
     }
 };
