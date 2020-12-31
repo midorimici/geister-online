@@ -121,7 +121,7 @@ export default class Draw {
         ctx.textBaseline = 'middle';
         ctx.fillStyle = config.dark;
         ctx.fillText('OK',
-            ...new Vec(coord).add(new Vec(size).div(2).val()).val());
+            ...new Vec(size).div(2).add(coord).val());
     }
 
     // 駒の配置を決める画面（対戦者のみ）
@@ -135,6 +135,8 @@ export default class Draw {
         const text2: string = '駒の配置を決めてね（↓自分側　↑相手側）';
         const text3: string = 'クリック（タップ）で悪いおばけ（赤）と良いおばけ（青）を切り替えるよ';
         ctx.fillStyle = config.dark;
+        ctx.textAlign = 'start';
+        ctx.textBaseline = 'alphabetic';
         ctx.font = `bold ${textSize}px Meiryo`;
         ctx.fillText(text1, csize/30, csize/30);
         ctx.font = `${textSize}px Meiryo`;

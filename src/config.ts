@@ -31,4 +31,8 @@ export class Vec {
     div(n: number): Vec {
         return new Vec([this.v[0]/n, this.v[1]/n]);
     }
+
+    quot(n: number): Vec {
+        return new Vec([Math.floor(this.v[0]/n), Math.floor(this.v[1]/n)]);
+    }
 }

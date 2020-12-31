@@ -1,4 +1,5 @@
 import Draw from './draw';
+import Mouse from './mouse';
 
 // 対戦するを選択したときはユーザー名入力欄を表示
 const radios: NodeListOf<HTMLElement> = document.getElementsByName('role');
@@ -67,15 +68,36 @@ for (let i = 1; i <= 4; i++) {
     }
 }
 
+let mouse: Mouse;
+
 socket.on('startGame', (room: {player1: string, player2: string}) => {
     if (!doneInitCanvas) {initCanvas()};
     if (myrole === 'play') {
-        if (room.player1 === myname) {
-            // 先手
-            draw.decidePiecePlace(0, posmap);
-        } else {
-            // 後手
-            draw.decidePiecePlace(1, posmap);
+        const drawDisp = () => {
+            if (room.player1 === myname) {
+                // 先手
+                draw.decidePiecePlace(0, posmap);
+            } else {
+                // 後手
+                draw.decidePiecePlace(1, posmap);
+            }
+        }
+        drawDisp();
+
+        // マウスイベント
+        const canvas = document.getElementById('canvas') as HTMLCanvasElement;
+        mouse = new Mouse(canvas);
+        canvas.onclick = (e: MouseEvent) => {
+            for (let i = 1; i <= 4; i++) {
+                for (let j = 2; j <= 3; j++) {
+                    if (String(mouse.getCoord(e)) === String([i, j])) {
+                        posmap.set(`${i},${j}`,
+                            posmap.get(`${i},${j}`) === 'R'
+                                ? 'B' : 'R');
+                    }
+                }
+            }
+            drawDisp();
         }
     } else {
         draw.waitingPlacing();
