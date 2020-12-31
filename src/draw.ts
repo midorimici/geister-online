@@ -125,7 +125,7 @@ export default class Draw {
     }
 
     // 駒の配置を決める画面（対戦者のみ）
-    decidePiecePlace(turn: 0 | 1) {
+    decidePiecePlace(turn: 0 | 1, pos: Map<string, string>) {
         this.clearCanvas();
         const ctx = this.ctx;
         const csize = this.canvas.width;
@@ -133,20 +133,23 @@ export default class Draw {
         const textSize: number = csize/40;
         const text1: string = `あなたは${turn === 0 ? '先' : '後'}手だよ。`
         const text2: string = '駒の配置を決めてね（↓自分側　↑相手側）';
-        const text3: string = 'クリック（タップ）で悪いおばけ（赤）、';
-        const text4: string = 'もう一度クリック（タップ）で良いおばけ（青）を配置するよ';
+        const text3: string = 'クリック（タップ）で悪いおばけ（赤）と良いおばけ（青）を切り替えるよ';
         ctx.fillStyle = config.dark;
         ctx.font = `bold ${textSize}px Meiryo`;
         ctx.fillText(text1, csize/30, csize/30);
         ctx.font = `${textSize}px Meiryo`;
         ctx.fillText(text2, csize/30 + 10*textSize, csize/30);
         ctx.fillText(text3, csize/30, csize/30 + 2*textSize);
-        ctx.fillText(text4, csize/30, csize/30 + 4*textSize);
 
         const lefttop: [number, number] = [
             this.margin + this.square_size,
             this.margin + 2*this.square_size];
         this.grid(lefttop, 4, 2);
         this.button([csize*5/6, csize*5/6], [csize/8, csize/12], true);
+        for (let [k, v] of pos.entries()) {
+            let [x, y] = k.split(',')
+            this.piece(v === 'R' ? config.red : config.blue,
+                [+x, +y], false);
+        }
     }
 };

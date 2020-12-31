@@ -14,7 +14,7 @@ for (let i: number = 0; i <= 1; i++) {
     });
 }
 
-
+// 入室～対戦相手待機
 
 let myrole: 'play' | 'watch';
 let myname: string;
@@ -58,15 +58,24 @@ socket.on('wait', () => {
     draw.waitingPlayer();
 });
 
+// 駒配置
+
+let posmap: Map<string, string> = new Map();
+for (let i = 1; i <= 4; i++) {
+    for (let j = 2; j <= 3; j++) {
+        posmap.set(`${i},${j}`, 'R');
+    }
+}
+
 socket.on('startGame', (room: {player1: string, player2: string}) => {
     if (!doneInitCanvas) {initCanvas()};
     if (myrole === 'play') {
         if (room.player1 === myname) {
             // 先手
-            draw.decidePiecePlace(0);
+            draw.decidePiecePlace(0, posmap);
         } else {
             // 後手
-            draw.decidePiecePlace(1);
+            draw.decidePiecePlace(1, posmap);
         }
     } else {
         draw.waitingPlacing();
