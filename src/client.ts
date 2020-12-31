@@ -73,20 +73,27 @@ let mouse: Mouse;
 socket.on('startGame', (room: {player1: string, player2: string}) => {
     if (!doneInitCanvas) {initCanvas()};
     if (myrole === 'play') {
-        const drawDisp = () => {
+        const checkColor = (colors: string[]): boolean => {
+            return (colors.filter((color: string) => color === 'R')).length
+                === (colors.filter((color: string) => color === 'B')).length;
+        }
+
+        const drawDisp = (disabled: boolean) => {
             if (room.player1 === myname) {
                 // 先手
-                draw.decidePiecePlace(0, posmap);
+                draw.decidePiecePlace(0, posmap, disabled);
             } else {
                 // 後手
-                draw.decidePiecePlace(1, posmap);
+                draw.decidePiecePlace(1, posmap, disabled);
             }
         }
-        drawDisp();
+        drawDisp(true);
 
         // マウスイベント
         const canvas = document.getElementById('canvas') as HTMLCanvasElement;
+        const csize = canvas.width;
         mouse = new Mouse(canvas);
+        let satisfied: boolean;
         canvas.onclick = (e: MouseEvent) => {
             for (let i = 1; i <= 4; i++) {
                 for (let j = 2; j <= 3; j++) {
@@ -94,10 +101,19 @@ socket.on('startGame', (room: {player1: string, player2: string}) => {
                         posmap.set(`${i},${j}`,
                             posmap.get(`${i},${j}`) === 'R'
                                 ? 'B' : 'R');
+                        satisfied = checkColor(Array.from(posmap.values()));
                     }
                 }
             }
-            drawDisp();
+            if (mouse.onArea(...mouse.getWindowPos(e),
+                    csize*5/6, csize*5/6, csize/8, csize/12)) {
+                if (satisfied) {
+                    console.log('ok');
+                } else {
+                    console.log('ng');
+                }
+            }
+            drawDisp(!satisfied);
         }
     } else {
         draw.waitingPlacing();

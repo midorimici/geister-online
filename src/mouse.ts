@@ -9,7 +9,7 @@ export default class Mouse {
         this.margin = canvas.width/20;
     }
 
-    private getWindowPos(e: MouseEvent): [number, number] {
+    getWindowPos(e: MouseEvent): [number, number] {
         const rect: DOMRect = (e.target as Element).getBoundingClientRect();
         return [e.clientX - rect.left, e.clientY - rect.top];
     }
@@ -21,5 +21,10 @@ export default class Mouse {
 
     getCoord(e: MouseEvent): [number, number] {
         return this.chcoord(this.getWindowPos(e));
+    }
+
+    onArea(x: number, y: number,
+            left: number, top: number, w: number, h: number): boolean {
+        return left <= x && x <= left+w && top <= y&& y <= top+h;
     }
 }
