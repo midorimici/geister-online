@@ -1,6 +1,9 @@
+
 import * as express from 'express';
 import * as http from 'http';
 import * as socketio from 'socket.io';
+
+import Piece from './src/piece';
 
 const app: express.Express = express();
 app.use(express.static(process.cwd() + '/public'))
@@ -17,55 +20,137 @@ app.get('/', (req, res) => {
     res.sendFile(process.cwd() + '/public/index.html');
 });
 
-let rooms: {[key: number]: {[key: string]: string}} = {};
+let rooms: Map<string, {
+    player1: {id: string, name: string, turn: 0 | 1},
+    player2: {id: string, name: string, turn: 0 | 1},
+    state: string,
+    ready: number
+}> = new Map();
+let order1: Map<string, 'R' | 'B'>;
+let order2: Map<string, 'R' | 'B'>;
+
+const initBoard = (
+        order1: Map<string, 'R' | 'B'>, order2: Map<string, 'R' | 'B'>,
+        turn: 0 | 1
+        ): [string, Piece][] => {
+    let m: Map<string, Piece> = new Map();
+    order1.forEach((v: 'R' | 'B', k: string) => {
+        const [x, y] = k.split(',').map((e: string) => +e);
+        if (turn === 0) {
+            m.set(`${x},${y+2}`, new Piece(v, 0));
+        } else {
+            m.set(`${5-x},${3-y}`, new Piece(v, 0));
+        }
+    })
+    order2.forEach((v: 'R' | 'B', k: string) => {
+        const [x, y] = k.split(',').map((e: string) => +e);
+        if (turn === 0) {
+            m.set(`${5-x},${3-y}`, new Piece(v, 1));
+        } else {
+            m.set(`${x},${y+2}`, new Piece(v, 1));
+        }
+    })
+    return [...m];
+}
 
 io.on('connection', (socket: customSocket) => {
-    socket.on('enterRoom', (info: {
+    socket.on('enter room', (info: {
         roomId: string, role: string, name: string
     }) => {
         socket.info = info;
-        const roomId: number = Number(info.roomId);
+        const room = rooms.get(info.roomId);
         if (info.role === 'play') {
             // 対戦者として参加
-            if (rooms[roomId]) {
+            if (room) {
                 // 指定のルームに対戦者がいたとき
-                if (Object.keys(rooms[roomId]).length === 1) {
+                if (room.state === 'waiting opponent') {
                     // 対戦者が1人待機している
-                    rooms[roomId].player2 = info.name;
+                    room.player2 = {
+                        id: socket.id,
+                        name: info.name,
+                        turn: 0
+                    };
+                    room.state = 'waiting placing';
                     socket.join(info.roomId);
-                    io.to(info.roomId).emit('startGame', rooms[roomId]);
+                    io.to(info.roomId).emit('wait placing');
+                    io.to(room.player1.id).emit('place pieces');
+                    io.to(room.player2.id).emit('place pieces');
                 } else {
                     // 対戦者がすでに2人いる
-                    socket.emit('roomFull', info.roomId);
+                    socket.emit('room full', info.roomId);
                 }
             } else {
                 // 新たにルームを作成する
-                rooms[roomId] = {
-                    player1: info.name
-                }
+                rooms.set(info.roomId, {
+                    player1: {
+                        id: socket.id,
+                        name: info.name,
+                        turn: 0
+                    },
+                    player2: {
+                        id: '',
+                        name: '',
+                        turn: 0
+                    },
+                    state: 'waiting opponent',
+                    ready: 0
+                });
                 socket.join(info.roomId);
-                socket.emit('wait');
+                socket.emit('wait opponent');
             }
             // デバッグ
             console.log(rooms);
         } else {
             // 観戦者として参加
-            if (rooms[roomId]) {
+            if (room) {
                 // 指定のルームが存在するとき
                 socket.join(info.roomId);
-                if (Object.keys(rooms[roomId]).length === 1) {
+                if (room.state === 'waiting opponent') {
                     // 対戦者が1人待機している
-                    socket.emit('wait');
+                    socket.emit('wait opponent');
+                } else if (room.state === 'waiting placing') {
+                    // 対戦者が駒の配置を決めている
+                    socket.emit('wait placing');
                 } else {
-                    // 対戦者がすでに2人いる
+                    // 対戦者がすでに2人いて対戦中
                     socket.emit('watch');
                 }
             } else {
                 // 指定したルームがないとき
-                socket.emit('noRoom', info.roomId);
+                socket.emit('no room', info.roomId);
             }
         }
     });
+
+    socket.on('decided place',
+            (roomId: string, name: string, poslist: [string, 'R' | 'B'][]) => {
+        const posmap = new Map(poslist);
+        const room = rooms.get(roomId);
+        room.ready = room.ready + 1;
+        if (room.ready === 1) {
+            // 先手
+            order1 = posmap;
+            if (room.player1.name === name) {
+                io.to(room.player1.id).emit('wait placing');
+            } else {
+                io.to(room.player2.id).emit('wait placing');
+            }
+        } else if (room.ready === 2) {
+            // 後手
+            order2 = posmap;
+            if (room.player1.name === name) {
+                room.player1.turn = 1;
+            } else {
+                room.player2.turn = 1;
+            }
+            room.state = 'playing';
+            io.to(roomId).emit('watch');
+            io.to(room.player1.id).emit('game',
+                initBoard(order1, order2, room.player1.turn));
+            io.to(room.player2.id).emit('game',
+                initBoard(order1, order2, room.player2.turn));
+        }
+    })
 
     socket.on('disconnect', () => {
         const info = socket.info;
@@ -74,10 +159,10 @@ io.on('connection', (socket: customSocket) => {
             // ルームに入っていたとき
             if (info.role === 'play') {
                 // 対戦者としてルームにいたとき
-                delete rooms[Number(info.roomId)];
+                rooms.delete(info.roomId);
                 // 観戦者ともう一方の対戦者も退出させる
                 socket.to(info.roomId).leave(info.roomId);
-                socket.to(info.roomId).emit('player_discon', info.name);
+                socket.to(info.roomId).emit('player discon', info.name);
             }
         }
     });

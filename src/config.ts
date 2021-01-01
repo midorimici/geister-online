@@ -16,7 +16,7 @@ export class Vec {
         return this.v;
     }
 
-    add(v: [number, number] | number): Vec {
+    add(v: number | [number, number]): Vec {
         if (Array.isArray(v)) {
             return new Vec([v[0] + this.v[0], v[1] + this.v[1]]);
         } else {

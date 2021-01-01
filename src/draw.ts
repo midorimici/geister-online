@@ -33,6 +33,8 @@ export default class Draw {
         const canvas = this.canvas;
         const ctx = this.ctx;
         const textSize: number = canvas.width/20;
+        ctx.textAlign = 'start';
+        ctx.textBaseline = 'alphabetic';
         ctx.font = `${textSize}px Meiryo`;
         ctx.fillStyle = config.dark;
         if (obj === 'player') {
@@ -125,23 +127,20 @@ export default class Draw {
     }
 
     // 駒の配置を決める画面（対戦者のみ）
-    decidePiecePlace(turn: 0 | 1, pos: Map<string, string>, disabled: boolean) {
+    decidePiecePlace(pos: Map<string, string>, disabled: boolean) {
         this.clearCanvas();
         const ctx = this.ctx;
         const csize = this.canvas.width;
 
         const textSize: number = csize/40;
-        const text1: string = `あなたは${turn === 0 ? '先' : '後'}手だよ。`
-        const text2: string = '駒の配置を決めてね（↓自分側　↑相手側）';
-        const text3: string = 'クリック（タップ）で悪いおばけ（赤）と良いおばけ（青）を切り替えるよ';
+        const text1: string = '駒の配置を決めてね（↓自分側　↑相手側）';
+        const text2: string = 'クリック（タップ）で悪いおばけ（赤）と良いおばけ（青）を切り替えるよ';
         ctx.fillStyle = config.dark;
         ctx.textAlign = 'start';
         ctx.textBaseline = 'alphabetic';
-        ctx.font = `bold ${textSize}px Meiryo`;
-        ctx.fillText(text1, csize/30, csize/30);
         ctx.font = `${textSize}px Meiryo`;
-        ctx.fillText(text2, csize/30 + 10*textSize, csize/30);
-        ctx.fillText(text3, csize/30, csize/30 + 2*textSize);
+        ctx.fillText(text1, csize/30 + 10*textSize, csize/30);
+        ctx.fillText(text2, csize/30, csize/30 + 2*textSize);
 
         const lefttop: [number, number] = [
             this.margin + this.square_size,

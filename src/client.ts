@@ -1,5 +1,6 @@
 import Draw from './draw';
 import Mouse from './mouse';
+import Piece from './piece';
 
 // 対戦するを選択したときはユーザー名入力欄を表示
 const radios: NodeListOf<HTMLElement> = document.getElementsByName('role');
@@ -17,6 +18,7 @@ for (let i: number = 0; i <= 1; i++) {
 
 // 入室～対戦相手待機
 
+let myroom: string;
 let myrole: 'play' | 'watch';
 let myname: string;
 let draw: Draw;
@@ -39,29 +41,30 @@ form.addEventListener('submit', (e: Event) => {
         role: data.get('role') as ('play' | 'watch'),
         name: data.get('username') as string,
     };
+    myroom = info.roomId;
     myrole = info.role;
     myname = info.name;
-    socket.emit('enterRoom', info);
+    socket.emit('enter room', info);
 }, false);
 
-socket.on('roomFull', (id: string) => {
+socket.on('room full', (id: string) => {
     const p: HTMLElement = document.getElementById('message');
     p.innerText = `ルーム${id}はいっぱいです。対戦者として参加することはできません。`;
 });
 
-socket.on('noRoom', (id: string)=> {
+socket.on('no room', (id: string)=> {
     const p: HTMLElement = document.getElementById('message');
     p.innerText = `ルーム${id}では対戦が行われていません。`;
 });
 
-socket.on('wait', () => {
+socket.on('wait opponent', () => {
     if (!doneInitCanvas) {initCanvas()};
     draw.waitingPlayer();
 });
 
 // 駒配置
 
-let posmap: Map<string, string> = new Map();
+let posmap: Map<string, 'R' | 'B'> = new Map();
 for (let i = 1; i <= 4; i++) {
     for (let j = 2; j <= 3; j++) {
         posmap.set(`${i},${j}`, 'R');
@@ -70,57 +73,60 @@ for (let i = 1; i <= 4; i++) {
 
 let mouse: Mouse;
 
-socket.on('startGame', (room: {player1: string, player2: string}) => {
+socket.on('place pieces', () => {
     if (!doneInitCanvas) {initCanvas()};
-    if (myrole === 'play') {
-        const checkColor = (colors: string[]): boolean => {
-            return (colors.filter((color: string) => color === 'R')).length
-                === (colors.filter((color: string) => color === 'B')).length;
-        }
+    const canvas = document.getElementById('canvas') as HTMLCanvasElement;
+    const csize = canvas.width;
+    let satisfied: boolean = false;
 
-        const drawDisp = (disabled: boolean) => {
-            if (room.player1 === myname) {
-                // 先手
-                draw.decidePiecePlace(0, posmap, disabled);
-            } else {
-                // 後手
-                draw.decidePiecePlace(1, posmap, disabled);
-            }
-        }
-        drawDisp(true);
-
-        // マウスイベント
-        const canvas = document.getElementById('canvas') as HTMLCanvasElement;
-        const csize = canvas.width;
-        mouse = new Mouse(canvas);
-        let satisfied: boolean;
-        canvas.onclick = (e: MouseEvent) => {
-            for (let i = 1; i <= 4; i++) {
-                for (let j = 2; j <= 3; j++) {
-                    if (String(mouse.getCoord(e)) === String([i, j])) {
-                        posmap.set(`${i},${j}`,
-                            posmap.get(`${i},${j}`) === 'R'
-                                ? 'B' : 'R');
-                        satisfied = checkColor(Array.from(posmap.values()));
-                    }
-                }
-            }
-            if (mouse.onArea(...mouse.getWindowPos(e),
-                    csize*5/6, csize*5/6, csize/8, csize/12)) {
-                if (satisfied) {
-                    console.log('ok');
-                } else {
-                    console.log('ng');
-                }
-            }
-            drawDisp(!satisfied);
-        }
-    } else {
-        draw.waitingPlacing();
+    const checkColor = (colors: ('R' | 'B')[]): boolean => {
+        return (colors.filter((color: 'R' | 'B') => color === 'R')).length
+            === (colors.filter((color: 'R' | 'B') => color === 'B')).length;
     }
-})
 
-socket.on('player_discon', (name: string) => {
+    const drawDisp = () => {
+        draw.decidePiecePlace(posmap, !satisfied);
+    }
+
+    drawDisp();
+
+    // マウスイベント
+    mouse = new Mouse(canvas);
+    canvas.onclick = (e: MouseEvent) => {
+        for (let i = 1; i <= 4; i++) {
+            for (let j = 2; j <= 3; j++) {
+                if (String(mouse.getCoord(e)) === String([i, j])) {
+                    posmap.set(`${i},${j}`,
+                        posmap.get(`${i},${j}`) === 'R'
+                            ? 'B' : 'R');
+                    satisfied = checkColor(Array.from(posmap.values()));
+                }
+            }
+        }
+        if (mouse.onArea(...mouse.getWindowPos(e),
+                csize*5/6, csize*5/6, csize/8, csize/12)) {
+            if (satisfied) {
+                socket.emit('decided place',
+                    myroom, myname, [...posmap.entries()]);
+            } else {
+                console.log('ng');
+            }
+        }
+        drawDisp();
+    }
+});
+
+socket.on('wait placing', () => {
+    if (!doneInitCanvas) {initCanvas()};
+    draw.waitingPlacing();
+});
+
+socket.on('game', (board: [string, Piece][]) => {
+    const boardmap: Map<string, Piece> = new Map(board);
+    console.log(boardmap);
+});
+
+socket.on('player discon', (name: string) => {
     alert(`${name}さんの接続が切れました。`);
     location.reload();
 });
