@@ -6,6 +6,7 @@ export default class Draw {
     private square_size: number;
     private margin: number;
     private piece_size: number;
+    private piecePath: Path2D;
 
     constructor(canvas: HTMLCanvasElement) {
         const cw: number = document.documentElement.clientWidth;
@@ -19,6 +20,12 @@ export default class Draw {
         this.square_size = canvas.width*3/20;
         this.margin = canvas.width/20;
         this.piece_size = canvas.width/10;
+
+        this.piecePath = new Path2D();
+        this.piecePath.moveTo(0, this.piece_size);
+        this.piecePath.lineTo(this.piece_size, this.piece_size);
+        this.piecePath.lineTo(this.piece_size/2, 0);
+        this.piecePath.closePath();
     }
 
     // アイボリーで画面全体を塗りつぶす
@@ -33,10 +40,8 @@ export default class Draw {
         const canvas = this.canvas;
         const ctx = this.ctx;
         const textSize: number = canvas.width/20;
-        ctx.textAlign = 'start';
-        ctx.textBaseline = 'alphabetic';
-        ctx.font = `${textSize}px Meiryo`;
         ctx.fillStyle = config.dark;
+        ctx.font = `${textSize}px Meiryo`;
         if (obj === 'player') {
             ctx.fillText('対戦相手の入室を待っています...',
                 canvas.width/2 - (7.5)*textSize,
@@ -83,30 +88,15 @@ export default class Draw {
         const padding: number = (this.square_size - this.piece_size)/2;
         const coord: [number, number] = new Vec(pos).mul(this.square_size)
             .add(this.margin + padding).val();
-        const piece_size: number = this.piece_size;
-        let points: [
-            [number, number],
-            [number, number],
-            [number, number]
-        ];
+        ctx.save();
+        ctx.fillStyle = color;
+        ctx.translate(...coord);
         if (rev) {
             // 相手の駒は逆転して描く
-            points = [coord,
-                new Vec(coord).add([piece_size, 0]).val(),
-                new Vec(coord).add([piece_size/2, piece_size]).val()];
-        } else {
-            points = [new Vec(coord).add([0, piece_size]).val(),
-                new Vec(coord).add([piece_size, piece_size]).val(),
-                new Vec(coord).add([piece_size/2, 0]).val()];
+            ctx.rotate(Math.PI);
         }
-
-        ctx.fillStyle = color;
-        ctx.beginPath();
-        ctx.moveTo(...points[0]);
-        ctx.lineTo(...points[1]);
-        ctx.lineTo(...points[2]);
-        ctx.closePath();
-        ctx.fill();
+        ctx.fill(this.piecePath);
+        ctx.restore();
     }
 
     // ボタンを描く
@@ -119,11 +109,13 @@ export default class Draw {
         ctx.fillRect(...coord, ...size);
 
         ctx.font = `${this.canvas.width/30}px Meiryo`;
+        ctx.save();
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.fillStyle = config.dark;
         ctx.fillText('OK',
             ...new Vec(size).div(2).add(coord).val());
+        ctx.restore();
     }
 
     // 駒の配置を決める画面（対戦者のみ）
@@ -136,10 +128,8 @@ export default class Draw {
         const text1: string = '駒の配置を決めてね（↓自分側　↑相手側）';
         const text2: string = 'クリック（タップ）で悪いおばけ（赤）と良いおばけ（青）を切り替えるよ';
         ctx.fillStyle = config.dark;
-        ctx.textAlign = 'start';
-        ctx.textBaseline = 'alphabetic';
         ctx.font = `${textSize}px Meiryo`;
-        ctx.fillText(text1, csize/30 + 10*textSize, csize/30);
+        ctx.fillText(text1, csize/30, csize/30);
         ctx.fillText(text2, csize/30, csize/30 + 2*textSize);
 
         const lefttop: [number, number] = [
