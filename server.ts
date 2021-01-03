@@ -26,8 +26,10 @@ let rooms: Map<string, {
     state: string,
     ready: number
 }> = new Map();
-let order1: Map<string, 'R' | 'B'>;
-let order2: Map<string, 'R' | 'B'>;
+let order1: Map<string, 'R' | 'B'>;     // 先手の初期配置
+let order2: Map<string, 'R' | 'B'>;     // 後手の初期配置
+let board1: [string, Piece][];      // 先手から見た盤面
+let board2: [string, Piece][];      // 後手から見た盤面
 
 const initBoard = (
         order1: Map<string, 'R' | 'B'>, order2: Map<string, 'R' | 'B'>,
@@ -113,7 +115,7 @@ io.on('connection', (socket: customSocket) => {
                     socket.emit('wait placing');
                 } else {
                     // 対戦者がすでに2人いて対戦中
-                    socket.emit('watch');
+                    socket.emit('watch', board1);
                 }
             } else {
                 // 指定したルームがないとき
@@ -144,11 +146,13 @@ io.on('connection', (socket: customSocket) => {
                 room.player2.turn = 1;
             }
             room.state = 'playing';
-            io.to(roomId).emit('watch');
-            io.to(room.player1.id).emit('game',
-                initBoard(order1, order2, room.player1.turn));
-            io.to(room.player2.id).emit('game',
-                initBoard(order1, order2, room.player2.turn));
+            board1 = initBoard(order1, order2, 0);
+            board2 = initBoard(order1, order2, 1);
+            io.to(roomId).emit('watch', board1);
+            io.to(room.player1.turn === 0 ? room.player1.id : room.player2.id)
+                .emit('game', board1, 0);
+            io.to(room.player1.turn === 1 ? room.player1.id : room.player2.id)
+                .emit('game', board2, 1);
         }
     })
 

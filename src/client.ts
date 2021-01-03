@@ -106,6 +106,7 @@ socket.on('place pieces', () => {
         if (mouse.onArea(...mouse.getWindowPos(e),
                 csize*5/6, csize*5/6, csize/8, csize/12)) {
             if (satisfied) {
+                canvas.onclick = () => {};
                 socket.emit('decided place',
                     myroom, myname, [...posmap.entries()]);
             } else {
@@ -121,10 +122,16 @@ socket.on('wait placing', () => {
     draw.waitingPlacing();
 });
 
-socket.on('game', (board: [string, Piece][]) => {
+socket.on('game', (board: [string, Piece][], turn: 0 | 1) => {
     const boardmap: Map<string, Piece> = new Map(board);
-    console.log(boardmap);
+    draw.board(boardmap, turn);
 });
+
+socket.on('watch', (board: [string, Piece][]) => {
+    if (!doneInitCanvas) {initCanvas()};
+    const boardmap: Map<string, Piece> = new Map(board);
+    draw.board(boardmap, 2);
+})
 
 socket.on('player discon', (name: string) => {
     alert(`${name}さんの接続が切れました。`);

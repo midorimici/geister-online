@@ -1,4 +1,5 @@
 import config, { Vec } from './config';
+import Piece from './piece';
 
 export default class Draw {
     private canvas: HTMLCanvasElement;
@@ -7,6 +8,7 @@ export default class Draw {
     private margin: number;
     private piece_size: number;
     private piecePath: Path2D;
+    private arrowPath: Path2D;
 
     constructor(canvas: HTMLCanvasElement) {
         const cw: number = document.documentElement.clientWidth;
@@ -22,10 +24,18 @@ export default class Draw {
         this.piece_size = canvas.width/10;
 
         this.piecePath = new Path2D();
-        this.piecePath.moveTo(0, this.piece_size);
-        this.piecePath.lineTo(this.piece_size, this.piece_size);
-        this.piecePath.lineTo(this.piece_size/2, 0);
+        this.piecePath.moveTo(0, -this.piece_size/2);
+        this.piecePath.lineTo(-this.piece_size/2, this.piece_size/2);
+        this.piecePath.lineTo(this.piece_size/2, this.piece_size/2);
         this.piecePath.closePath();
+
+        this.arrowPath = new Path2D();
+        this.arrowPath.moveTo(this.piece_size/2, this.piece_size/2);
+        this.arrowPath.lineTo(0, 0);
+        this.arrowPath.lineTo(-this.piece_size/2, this.piece_size/2);
+        this.arrowPath.moveTo(0, 0);
+        this.arrowPath.lineTo(0, this.piece_size);
+        this.arrowPath.closePath();
     }
 
     // アイボリーで画面全体を塗りつぶす
@@ -85,9 +95,9 @@ export default class Draw {
     // 駒を描く
     private piece(color: string, pos: [number, number], rev: boolean) {
         const ctx = this.ctx;
-        const padding: number = (this.square_size - this.piece_size)/2;
+        //const padding: number = (this.square_size - this.piece_size)/2;
         const coord: [number, number] = new Vec(pos).mul(this.square_size)
-            .add(this.margin + padding).val();
+            .add(this.margin).add(this.square_size/2).val();
         ctx.save();
         ctx.fillStyle = color;
         ctx.translate(...coord);
@@ -141,6 +151,56 @@ export default class Draw {
             let [x, y] = k.split(',')
             this.piece(v === 'R' ? config.red : config.blue,
                 [+x, +y], false);
+        }
+    }
+
+    // ゲームボードと盤面上の駒を描く
+    board(boardmap: Map<string, Piece>, turn: 0 | 1 | 2) {
+        this.clearCanvas();
+        const ctx = this.ctx;
+        // グリッド
+        this.grid([this.margin, this.margin], 6, 6);
+        // 角の矢印
+        const padding: number = (this.square_size - this.piece_size)/2;
+        const coord: [number, number] = new Vec([this.square_size/2, padding])
+            .add(this.margin).val();
+        ctx.save();
+        ctx.translate(...coord);
+        ctx.stroke(this.arrowPath);
+        ctx.restore();
+        ctx.save();
+        ctx.translate(...new Vec(coord).add([5*this.square_size, 0]).val());
+        ctx.stroke(this.arrowPath);
+        ctx.restore();
+        ctx.save();
+        ctx.translate(...new Vec(coord)
+            .add([0, 5*this.square_size + this.piece_size]).val());
+        ctx.rotate(Math.PI);
+        ctx.stroke(this.arrowPath);
+        ctx.restore();
+        ctx.save();
+        ctx.translate(...new Vec(coord)
+            .add([5*this.square_size,
+                5*this.square_size + this.piece_size]).val());
+        ctx.rotate(Math.PI);
+        ctx.stroke(this.arrowPath);
+        ctx.restore();
+        // 駒
+        for (let [pos, piece] of boardmap.entries()) {
+            const pieceColor = piece.color === 'R' ? config.red : config.blue;
+            const pos_ = pos.split(',').map((e: string) => +e) as [number, number];
+            if (turn === 2) {
+                // 観戦者は両方見える。先手目線
+                this.piece(pieceColor, pos_, piece.turn === 1);
+            } else if (turn === 0) {
+                // 先手
+                this.piece(piece.turn === 0 ? pieceColor : config.grey,
+                    pos_, piece.turn === 1);
+            } else {
+                // 後手
+                this.piece(piece.turn === 1 ? pieceColor : config.grey,
+                    pos_, piece.turn === 0);
+            }
         }
     }
 };

@@ -1,8 +1,8 @@
 import { Vec } from './config';
 
 export default class Piece {
-    private color: 'R' | 'B';
-    private turn: 0 | 1;
+    color: 'R' | 'B';
+    turn: 0 | 1;
 
     constructor(color: 'R' | 'B', turn: 0 | 1) {
         this.color = color;     // 駒色
