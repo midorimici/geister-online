@@ -38,13 +38,16 @@ export default class Draw {
         this.arrowPath.closePath();
     }
 
-    // アイボリーで画面全体を塗りつぶす
+    /** アイボリーで画面全体を塗りつぶす */
     private clearCanvas() {
         this.ctx.fillStyle = config.ivory;
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
     }
 
-    // 待機画面
+    /** 待機画面
+     * @param obj 待機している対象。
+     * 対戦者の入室または対戦者の駒配置
+     */
     private waiting(obj: 'player' | 'placing') {
         this.clearCanvas();
         const canvas = this.canvas;
@@ -95,7 +98,6 @@ export default class Draw {
     // 駒を描く
     private piece(color: string, pos: [number, number], rev: boolean) {
         const ctx = this.ctx;
-        //const padding: number = (this.square_size - this.piece_size)/2;
         const coord: [number, number] = new Vec(pos).mul(this.square_size)
             .add(this.margin + this.square_size/2).val();
         ctx.save();
@@ -128,7 +130,10 @@ export default class Draw {
         ctx.restore();
     }
 
-    // 駒の配置を決める画面（対戦者のみ）
+    /** 駒の配置を決める画面（対戦者のみ）  
+     * @param pos 位置と色の Map
+     * @param disabled ボタンを押せなくする
+    */
     decidePiecePlace(pos: Map<string, string>, disabled: boolean) {
         this.clearCanvas();
         const ctx = this.ctx;
@@ -154,13 +159,21 @@ export default class Draw {
         }
     }
 
-    // ゲームボードと盤面上の駒を描く
+    /** ゲームボードと盤面上の駒を描く
+     * @param boardmap 盤面データ
+     * @param turn 先手後手どちら目線か。
+     * 2 なら先手目線で駒色は隠さない
+     * @param first 先手のプレイヤー名
+     * @param second 後手のプレイヤー名
+     */
     board(boardmap: Map<string, {color: 'R' | 'B', turn: 0 | 1}>,
-            turn: 0 | 1 | 2) {
+            turn: 0 | 1 | 2, first: string, second: string) {
         this.clearCanvas();
         const ctx = this.ctx;
+
         // グリッド
         this.grid([this.margin, this.margin], 6, 6);
+
         // 角の矢印
         const padding: number = (this.square_size - this.piece_size)/2;
         const coord: [number, number] = new Vec([this.square_size/2, padding])
@@ -186,6 +199,7 @@ export default class Draw {
         ctx.rotate(Math.PI);
         ctx.stroke(this.arrowPath);
         ctx.restore();
+
         // 駒
         for (let [pos, piece] of boardmap.entries()) {
             const pieceColor = piece.color === 'R' ? config.red : config.blue;
@@ -203,6 +217,14 @@ export default class Draw {
                     pos_, piece.turn === 0);
             }
         }
+
+        // プレイヤー名
+        const csize: number = this.canvas.width;
+        const textSize = csize/40;
+        ctx.fillStyle = config.dark;
+        ctx.font = `${textSize}px Meiryo`;
+        ctx.fillText(turn === 1 ? second : first, csize*3/4, csize - textSize);
+        ctx.fillText(turn === 1 ? first : second, csize*3/4, textSize);
     }
 
     // 駒の行先を円で表示する

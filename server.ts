@@ -28,7 +28,9 @@ let order1: Map<string, 'R' | 'B'>;     // 先手の初期配置
 let order2: Map<string, 'R' | 'B'>;     // 後手の初期配置
 let board1: [string, {color: 'R' | 'B', turn: 0 | 1}][];      // 先手から見た盤面
 let board2: [string, {color: 'R' | 'B', turn: 0 | 1}][];      // 後手から見た盤面
-let first: string, second: string;      // 先手、後手の socket id
+// 先手、後手の名前と socket id
+let first: {name: string, id: string};
+let second: {name: string, id: string};
 let curTurn: 0 | 1 = 0;     // 現在のターン
 
 const initBoard = (
@@ -115,7 +117,7 @@ io.on('connection', (socket: customSocket) => {
                     socket.emit('wait placing');
                 } else {
                     // 対戦者がすでに2人いて対戦中
-                    socket.emit('watch', board1);
+                    socket.emit('watch', board1, first.name, second.name);
                 }
             } else {
                 // 指定したルームがないとき
@@ -148,11 +150,23 @@ io.on('connection', (socket: customSocket) => {
             room.state = 'playing';
             board1 = initBoard(order1, order2, 0);
             board2 = initBoard(order1, order2, 1);
-            first = room.player1.turn === 0 ? room.player1.id : room.player2.id;
-            second = room.player1.turn === 1 ? room.player1.id : room.player2.id;
-            io.to(roomId).emit('watch', board1);
-            io.to(first).emit('game', board1, 0, true);
-            io.to(second).emit('game', board2, 1, false);
+            first = room.player1.turn === 0 ? {
+                name: room.player1.name,
+                id: room.player1.id
+            } : {
+                name: room.player2.name,
+                id: room.player2.id
+            };
+            second = room.player1.turn === 1 ? {
+                name: room.player1.name,
+                id: room.player1.id
+            } : {
+                name: room.player2.name,
+                id: room.player2.id
+            };
+            io.to(roomId).emit('watch', board1, first.name, second.name);
+            io.to(first.id).emit('game', board1, 0, true, first.name, second.name);
+            io.to(second.id).emit('game', board2, 1, false, first.name, second.name);
         }
     });
 
@@ -176,9 +190,9 @@ io.on('connection', (socket: customSocket) => {
         );
         // ターン交代
         curTurn = (curTurn+1)%2 as 0 | 1;
-        io.to(roomId).emit('watch', board1);
-        io.to(first).emit('game', board1, 0, curTurn === 0);
-        io.to(second).emit('game', board2, 1, curTurn === 1);
+        io.to(roomId).emit('watch', board1, first.name, second.name);
+        io.to(first.id).emit('game', board1, 0, curTurn === 0, first.name, second.name);
+        io.to(second.id).emit('game', board2, 1, curTurn === 1, first.name, second.name);
     });
 
     socket.on('disconnect', () => {

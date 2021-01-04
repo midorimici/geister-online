@@ -120,12 +120,22 @@ socket.on('wait placing', () => {
     draw.waitingPlacing();
 });
 
-socket.on('game', (board: [string, {color: 'R' | 'B', turn: 0 | 1}][],
-        turn: 0 | 1, myturn: boolean) => {
+socket.on('game', 
+        /**
+         * 対戦者側のゲーム処理
+         * @param board 盤面データ
+         * @param turn 先手後手どちら目線か
+         * @param myturn 現在自分のターンか
+         * @param first 先手のプレイヤー名
+         * @param second 後手のプレイヤー名
+         */
+        (board: [string, {color: 'R' | 'B', turn: 0 | 1}][],
+        turn: 0 | 1, myturn: boolean,
+        first: string, second: string) => {
     const boardmap: Map<string, {color: 'R' | 'B', turn: 0 | 1}> = new Map(board);
     const canvas = document.getElementById('canvas') as HTMLCanvasElement;
     let selectingPos: [number, number];
-    draw.board(boardmap, turn);
+    draw.board(boardmap, turn, first, second);
     // マウスイベント
     if (myturn) {
         mouse = new Mouse(canvas);
@@ -139,7 +149,7 @@ socket.on('game', (board: [string, {color: 'R' | 'B', turn: 0 | 1}][],
                     boardmap.get(String(sqPos))) as ['R' | 'B', 0 | 1];
                 const piece = new Piece(...pieceData);
                 // 行先を描画
-                draw.board(boardmap, turn);
+                draw.board(boardmap, turn, first, second);
                 draw.dest(piece, selectingPos, boardmap);
             } else {
                 if (boardmap.has(String(selectingPos))) {
@@ -157,7 +167,7 @@ socket.on('game', (board: [string, {color: 'R' | 'B', turn: 0 | 1}][],
                     }
                 }
                 // 盤面描画更新
-                draw.board(boardmap, turn);
+                draw.board(boardmap, turn, first, second);
                 selectingPos = null;
             }
         }
@@ -166,10 +176,11 @@ socket.on('game', (board: [string, {color: 'R' | 'B', turn: 0 | 1}][],
     }
 });
 
-socket.on('watch', (board: [string, {color: 'R' | 'B', turn: 0 | 1}][]) => {
+socket.on('watch', (board: [string, {color: 'R' | 'B', turn: 0 | 1}][],
+        first: string, second: string) => {
     if (!doneInitCanvas) {initCanvas()};
     const boardmap: Map<string, {color: 'R' | 'B', turn: 0 | 1}> = new Map(board);
-    draw.board(boardmap, 2);
+    draw.board(boardmap, 2, first, second);
 })
 
 socket.on('player discon', (name: string) => {
