@@ -28,6 +28,8 @@ let order1: Map<string, 'R' | 'B'>;     // 先手の初期配置
 let order2: Map<string, 'R' | 'B'>;     // 後手の初期配置
 let board1: [string, {color: 'R' | 'B', turn: 0 | 1}][];      // 先手から見た盤面
 let board2: [string, {color: 'R' | 'B', turn: 0 | 1}][];      // 後手から見た盤面
+let first: string, second: string;      // 先手、後手の socket id
+let curTurn: 0 | 1 = 0;     // 現在のターン
 
 const initBoard = (
         order1: Map<string, 'R' | 'B'>, order2: Map<string, 'R' | 'B'>,
@@ -146,13 +148,38 @@ io.on('connection', (socket: customSocket) => {
             room.state = 'playing';
             board1 = initBoard(order1, order2, 0);
             board2 = initBoard(order1, order2, 1);
+            first = room.player1.turn === 0 ? room.player1.id : room.player2.id;
+            second = room.player1.turn === 1 ? room.player1.id : room.player2.id;
             io.to(roomId).emit('watch', board1);
-            io.to(room.player1.turn === 0 ? room.player1.id : room.player2.id)
-                .emit('game', board1, 0, true);
-            io.to(room.player1.turn === 1 ? room.player1.id : room.player2.id)
-                .emit('game', board2, 1, false);
+            io.to(first).emit('game', board1, 0, true);
+            io.to(second).emit('game', board2, 1, false);
         }
-    })
+    });
+
+    socket.on('move piece', (
+            roomId: string, turn: 0 | 1,
+            origin: [number, number], dest: [number, number]) => {
+        let board = [board1, board2][turn];
+        let another = [board1, board2][(turn+1)%2];
+        // 先手目線のボードを更新する
+        let originIndex = board.findIndex(e => e[0] === String(origin));
+        board = board.splice(
+            originIndex, 1, [String(dest), board[originIndex][1]]
+        );
+        // 座標変換
+        origin = origin.map((x: number) => 5-x) as [number, number];
+        dest = dest.map((x: number) => 5-x) as [number, number];
+        // 後手目線のボードを更新する
+        originIndex = another.findIndex(e => e[0] === String(origin));
+        another = another.splice(
+            originIndex, 1, [String(dest), another[originIndex][1]]
+        );
+        // ターン交代
+        curTurn = (curTurn+1)%2 as 0 | 1;
+        io.to(roomId).emit('watch', board1);
+        io.to(first).emit('game', board1, 0, curTurn === 0);
+        io.to(second).emit('game', board2, 1, curTurn === 1);
+    });
 
     socket.on('disconnect', () => {
         const info = socket.info;

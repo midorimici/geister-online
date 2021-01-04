@@ -19,7 +19,6 @@ for (let i: number = 0; i <= 1; i++) {
 // 入室～対戦相手待機
 
 let myroom: string;
-let myrole: 'play' | 'watch';
 let myname: string;
 let draw: Draw;
 let doneInitCanvas: boolean = false;
@@ -42,7 +41,6 @@ form.addEventListener('submit', (e: Event) => {
         name: data.get('username') as string,
     };
     myroom = info.roomId;
-    myrole = info.role;
     myname = info.name;
     socket.emit('enter room', info);
 }, false);
@@ -137,14 +135,16 @@ socket.on('game', (board: [string, {color: 'R' | 'B', turn: 0 | 1}][],
                     && boardmap.get(String(sqPos)).turn === turn) {
                 // 自分の駒を選択したとき
                 selectingPos = sqPos;
-                const pieceData = Object.values(boardmap.get(String(sqPos))) as ['R' | 'B', 0 | 1];
+                const pieceData = Object.values(
+                    boardmap.get(String(sqPos))) as ['R' | 'B', 0 | 1];
                 const piece = new Piece(...pieceData);
                 // 行先を描画
                 draw.board(boardmap, turn);
                 draw.dest(piece, selectingPos, boardmap);
             } else {
                 if (boardmap.has(String(selectingPos))) {
-                    const pieceData = Object.values(boardmap.get(String(selectingPos))) as ['R' | 'B', 0 | 1];
+                    const pieceData = Object.values(
+                        boardmap.get(String(selectingPos))) as ['R' | 'B', 0 | 1];
                     const piece = new Piece(...pieceData);
                     if (piece.coveringSquares(selectingPos).some(e =>
                             String(e) === String(sqPos))) {
@@ -152,6 +152,8 @@ socket.on('game', (board: [string, {color: 'R' | 'B', turn: 0 | 1}][],
                         // 駒の移動
                         boardmap.set(String(sqPos), boardmap.get(String(selectingPos)));
                         boardmap.delete(String(selectingPos));
+                        // サーバへ移動データを渡す
+                        socket.emit('move piece', myroom, turn, selectingPos, sqPos);
                     }
                 }
                 // 盤面描画更新
@@ -159,6 +161,8 @@ socket.on('game', (board: [string, {color: 'R' | 'B', turn: 0 | 1}][],
                 selectingPos = null;
             }
         }
+    } else {
+        canvas.onclick = () => {};
     }
 });
 
