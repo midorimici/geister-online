@@ -8,31 +8,51 @@ app.use(express.static(process.cwd() + '/public'))
 const server: http.Server = http.createServer(app);
 const io: socketio.Server = require('socket.io')(server);
 
+app.get('/', (req, res) => {
+    res.sendFile(process.cwd() + '/public/index.html');
+});
+
+// socket.info を使えるようにする
 interface customSocket extends socketio.Socket {
     info: {
         roomId: string, role: string, name: string
     }
 }
 
-app.get('/', (req, res) => {
-    res.sendFile(process.cwd() + '/public/index.html');
-});
-
+/** 部屋番号と部屋のデータの Map
+ * @property player1 先に入室したプレイヤー
+ * @property player2 後から入室したプレイヤー
+ * @property state 部屋の状態
+ * @property ready 駒の配置の準備が完了したプレイヤー数
+*/
 let rooms: Map<string, {
     player1: {id: string, name: string, turn: 0 | 1},
     player2: {id: string, name: string, turn: 0 | 1},
     state: string,
     ready: number
 }> = new Map();
-let order1: Map<string, 'R' | 'B'>;     // 先手の初期配置
-let order2: Map<string, 'R' | 'B'>;     // 後手の初期配置
-let board1: [string, {color: 'R' | 'B', turn: 0 | 1}][];      // 先手から見た盤面
-let board2: [string, {color: 'R' | 'B', turn: 0 | 1}][];      // 後手から見た盤面
-// 先手、後手の名前と socket id
+/** 先手の初期配置 */
+let order1: Map<string, 'R' | 'B'>;
+/** 後手の初期配置 */
+let order2: Map<string, 'R' | 'B'>;
+/** 先手から見た盤面 */
+let board1: [string, {color: 'R' | 'B', turn: 0 | 1}][];
+/** 後手から見た盤面 */
+let board2: [string, {color: 'R' | 'B', turn: 0 | 1}][];
+/** 先手の名前と socket id */
 let first: {name: string, id: string};
+/** 後手の名前と socket id */
 let second: {name: string, id: string};
-let curTurn: 0 | 1 = 0;     // 現在のターン
+/** 現在のターン */
+let curTurn: 0 | 1 = 0;
 
+/**
+ * 初期盤面を生成する
+ * @param order1 先手の初期配置
+ * @param order2 後手の初期配置
+ * @param turn どちら目線か
+ * @returns クライアントへの転送のためシリアライズされた Map
+ */
 const initBoard = (
         order1: Map<string, 'R' | 'B'>, order2: Map<string, 'R' | 'B'>,
         turn: 0 | 1
@@ -58,9 +78,12 @@ const initBoard = (
 }
 
 io.on('connection', (socket: customSocket) => {
-    socket.on('enter room', (info: {
-        roomId: string, role: string, name: string
-    }) => {
+    socket.on('enter room', 
+            /**
+             * 入室したときのサーバ側の処理
+             * @param info 入室者のデータ
+             */
+            (info: {roomId: string, role: string, name: string}) => {
         socket.info = info;
         const room = rooms.get(info.roomId);
         if (info.role === 'play') {
@@ -127,7 +150,13 @@ io.on('connection', (socket: customSocket) => {
     });
 
     socket.on('decided place',
-            (roomId: string, name: string, poslist: [string, 'R' | 'B'][]) => {
+            /**
+             * 駒の配置を決定したときのサーバ側の処理
+             * @param poslist どこにどの色の駒を配置したかを表すリスト
+             */
+            (poslist: [string, 'R' | 'B'][]) => {
+        const roomId = socket.info.roomId;
+        const name = socket.info.name;
         const posmap = new Map(poslist);
         const room = rooms.get(roomId);
         room.ready = room.ready + 1;
@@ -170,9 +199,15 @@ io.on('connection', (socket: customSocket) => {
         }
     });
 
-    socket.on('move piece', (
-            roomId: string, turn: 0 | 1,
-            origin: [number, number], dest: [number, number]) => {
+    socket.on('move piece',
+            /**
+             * 駒を動かしたときのサーバ側の処理
+             * @param turn 動かした人が先手か後手か
+             * @param origin 駒の移動元の位置。ゲーム内座標
+             * @param dest 駒の移動先の位置。ゲーム内座標
+             */
+            (turn: 0 | 1, origin: [number, number], dest: [number, number]) => {
+        const roomId = socket.info.roomId;
         let board = [board1, board2][turn];
         let another = [board1, board2][(turn+1)%2];
         // 先手目線のボードを更新する

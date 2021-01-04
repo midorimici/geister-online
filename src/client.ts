@@ -18,11 +18,11 @@ for (let i: number = 0; i <= 1; i++) {
 
 // 入室～対戦相手待機
 
-let myroom: string;
-let myname: string;
 let draw: Draw;
+/** initCanvas を実行済か */
 let doneInitCanvas: boolean = false;
 
+/** 入力フォームを非表示にし、canvas を表示する */
 const initCanvas = () => {
     document.getElementById('settings').style.display = 'none';
     const canvas = document.getElementById('canvas') as HTMLCanvasElement;
@@ -30,6 +30,7 @@ const initCanvas = () => {
     doneInitCanvas = true;
 }
 
+// フォーム取得
 const socket: SocketIOClient.Socket = io();
 const form = document.getElementById('form') as HTMLFormElement;
 form.addEventListener('submit', (e: Event) => {
@@ -40,19 +41,17 @@ form.addEventListener('submit', (e: Event) => {
         role: data.get('role') as ('play' | 'watch'),
         name: data.get('username') as string,
     };
-    myroom = info.roomId;
-    myname = info.name;
     socket.emit('enter room', info);
 }, false);
 
-socket.on('room full', (id: string) => {
+socket.on('room full', /** @param id 部屋番号 */ (id: string) => {
     const p: HTMLElement = document.getElementById('message');
-    p.innerText = `ルーム${id}はいっぱいです。対戦者として参加することはできません。`;
+    p.innerText = `ルーム ${id} はいっぱいです。対戦者として参加することはできません。`;
 });
 
-socket.on('no room', (id: string)=> {
+socket.on('no room', /** @param id 部屋番号 */ (id: string)=> {
     const p: HTMLElement = document.getElementById('message');
-    p.innerText = `ルーム${id}では対戦が行われていません。`;
+    p.innerText = `ルーム ${id} では対戦が行われていません。`;
 });
 
 socket.on('wait opponent', () => {
@@ -61,7 +60,7 @@ socket.on('wait opponent', () => {
 });
 
 // 駒配置
-
+/** 位置と色の Map */
 let posmap: Map<string, 'R' | 'B'> = new Map();
 for (let i = 1; i <= 4; i++) {
     for (let j = 2; j <= 3; j++) {
@@ -75,13 +74,19 @@ socket.on('place pieces', () => {
     if (!doneInitCanvas) {initCanvas()};
     const canvas = document.getElementById('canvas') as HTMLCanvasElement;
     const csize = canvas.width;
+    /** 赤と青が同数ずつあるか */
     let satisfied: boolean = false;
 
+    /**
+     * 赤と青が同数ずつあるかチェックする
+     * @param colors 色のリスト
+     */
     const checkColor = (colors: ('R' | 'B')[]): boolean => {
         return (colors.filter((color: 'R' | 'B') => color === 'R')).length
             === (colors.filter((color: 'R' | 'B') => color === 'B')).length;
     }
 
+    /** 画面を描画する */
     const drawDisp = () => {
         draw.decidePiecePlace(posmap, !satisfied);
     }
@@ -105,8 +110,7 @@ socket.on('place pieces', () => {
                 csize*5/6, csize*5/6, csize/8, csize/12)) {
             if (satisfied) {
                 canvas.onclick = () => {};
-                socket.emit('decided place',
-                    myroom, myname, [...posmap.entries()]);
+                socket.emit('decided place', [...posmap.entries()]);
             } else {
                 console.log('ng');
             }
@@ -124,7 +128,7 @@ socket.on('game',
         /**
          * 対戦者側のゲーム処理
          * @param board 盤面データ
-         * @param turn 先手後手どちら目線か
+         * @param turn 自分が先手か後手か
          * @param myturn 現在自分のターンか
          * @param first 先手のプレイヤー名
          * @param second 後手のプレイヤー名
@@ -134,6 +138,7 @@ socket.on('game',
         first: string, second: string) => {
     const boardmap: Map<string, {color: 'R' | 'B', turn: 0 | 1}> = new Map(board);
     const canvas = document.getElementById('canvas') as HTMLCanvasElement;
+    /** 選択中の駒の位置 */
     let selectingPos: [number, number];
     draw.board(boardmap, turn, first, second);
     // マウスイベント
@@ -163,7 +168,7 @@ socket.on('game',
                         boardmap.set(String(sqPos), boardmap.get(String(selectingPos)));
                         boardmap.delete(String(selectingPos));
                         // サーバへ移動データを渡す
-                        socket.emit('move piece', myroom, turn, selectingPos, sqPos);
+                        socket.emit('move piece', turn, selectingPos, sqPos);
                     }
                 }
                 // 盤面描画更新
@@ -176,7 +181,14 @@ socket.on('game',
     }
 });
 
-socket.on('watch', (board: [string, {color: 'R' | 'B', turn: 0 | 1}][],
+socket.on('watch',
+        /**
+         * 観戦者側のゲーム処理
+         * @param board 盤面データ
+         * @param first 先手のプレイヤー名
+         * @param second 後手のプレイヤー名
+         */
+        (board: [string, {color: 'R' | 'B', turn: 0 | 1}][],
         first: string, second: string) => {
     if (!doneInitCanvas) {initCanvas()};
     const boardmap: Map<string, {color: 'R' | 'B', turn: 0 | 1}> = new Map(board);

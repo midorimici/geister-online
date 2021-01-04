@@ -4,11 +4,19 @@ export default class Piece {
     color: 'R' | 'B';
     turn: 0 | 1;
 
+    /**
+     * @param color 駒色
+     * @param turn 先手(0)後手(1)どちらの駒か
+     */
     constructor(color: 'R' | 'B', turn: 0 | 1) {
-        this.color = color;     // 駒色
-        this.turn = turn;       // 先手(0)後手(1)どちらの駒か
+        this.color = color;
+        this.turn = turn;
     }
 
+    /**
+     * 駒が動ける位置のリストを返す
+     * @param pos 駒の位置。ゲーム内座標
+     */
     coveringSquares(pos: [number, number]): [number, number][] {
         const pos_: [number, number][] = [[0, 1], [0, -1], [-1, 0], [1, 0]]
             .map((e: [number, number]) => new Vec(pos).add(e).val());
