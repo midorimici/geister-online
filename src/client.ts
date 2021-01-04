@@ -122,14 +122,49 @@ socket.on('wait placing', () => {
     draw.waitingPlacing();
 });
 
-socket.on('game', (board: [string, Piece][], turn: 0 | 1) => {
-    const boardmap: Map<string, Piece> = new Map(board);
+socket.on('game', (board: [string, {color: 'R' | 'B', turn: 0 | 1}][],
+        turn: 0 | 1, myturn: boolean) => {
+    const boardmap: Map<string, {color: 'R' | 'B', turn: 0 | 1}> = new Map(board);
+    const canvas = document.getElementById('canvas') as HTMLCanvasElement;
+    let selectingPos: [number, number];
     draw.board(boardmap, turn);
+    // マウスイベント
+    if (myturn) {
+        mouse = new Mouse(canvas);
+        canvas.onclick = (e: MouseEvent) => {
+            const sqPos = mouse.getCoord(e);
+            if (boardmap.has(String(sqPos))
+                    && boardmap.get(String(sqPos)).turn === turn) {
+                // 自分の駒を選択したとき
+                selectingPos = sqPos;
+                const pieceData = Object.values(boardmap.get(String(sqPos))) as ['R' | 'B', 0 | 1];
+                const piece = new Piece(...pieceData);
+                // 行先を描画
+                draw.board(boardmap, turn);
+                draw.dest(piece, selectingPos, boardmap);
+            } else {
+                if (boardmap.has(String(selectingPos))) {
+                    const pieceData = Object.values(boardmap.get(String(selectingPos))) as ['R' | 'B', 0 | 1];
+                    const piece = new Piece(...pieceData);
+                    if (piece.coveringSquares(selectingPos).some(e =>
+                            String(e) === String(sqPos))) {
+                        // 行先を選択したとき
+                        // 駒の移動
+                        boardmap.set(String(sqPos), boardmap.get(String(selectingPos)));
+                        boardmap.delete(String(selectingPos));
+                    }
+                }
+                // 盤面描画更新
+                draw.board(boardmap, turn);
+                selectingPos = null;
+            }
+        }
+    }
 });
 
-socket.on('watch', (board: [string, Piece][]) => {
+socket.on('watch', (board: [string, {color: 'R' | 'B', turn: 0 | 1}][]) => {
     if (!doneInitCanvas) {initCanvas()};
-    const boardmap: Map<string, Piece> = new Map(board);
+    const boardmap: Map<string, {color: 'R' | 'B', turn: 0 | 1}> = new Map(board);
     draw.board(boardmap, 2);
 })
 

@@ -9,18 +9,17 @@ export default class Piece {
         this.turn = turn;       // 先手(0)後手(1)どちらの駒か
     }
 
-    convering_squares(pos: [number, number]): [number, number][] {
+    coveringSquares(pos: [number, number]): [number, number][] {
         const pos_: [number, number][] = [[0, 1], [0, -1], [-1, 0], [1, 0]]
             .map((e: [number, number]) => new Vec(pos).add(e).val());
         let dest: [number, number][] = pos_
-            .filter(([x, y]: [number, number]) => {
-                0 <= x && x <= 5 && 0 <= y && y <= 5
-            });
+            .filter(([x, y]: [number, number]) =>
+                0 <= x && x <= 5 && 0 <= y && y <= 5);
         if (this.color === 'B') {
-            if (String(pos) === '0,5') {
-                dest.push([0, 6]);
-            } else if (String(pos) === '5,5') {
-                dest.push([5, 6]);
+            if (String(pos) === '0,0') {
+                dest.push([0, -1]);
+            } else if (String(pos) === '5,0') {
+                dest.push([5, -1]);
             }
         }
         return dest;

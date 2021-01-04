@@ -3,8 +3,6 @@ import * as express from 'express';
 import * as http from 'http';
 import * as socketio from 'socket.io';
 
-import Piece from './src/piece';
-
 const app: express.Express = express();
 app.use(express.static(process.cwd() + '/public'))
 const server: http.Server = http.createServer(app);
@@ -28,30 +26,30 @@ let rooms: Map<string, {
 }> = new Map();
 let order1: Map<string, 'R' | 'B'>;     // 先手の初期配置
 let order2: Map<string, 'R' | 'B'>;     // 後手の初期配置
-let board1: [string, Piece][];      // 先手から見た盤面
-let board2: [string, Piece][];      // 後手から見た盤面
+let board1: [string, {color: 'R' | 'B', turn: 0 | 1}][];      // 先手から見た盤面
+let board2: [string, {color: 'R' | 'B', turn: 0 | 1}][];      // 後手から見た盤面
 
 const initBoard = (
         order1: Map<string, 'R' | 'B'>, order2: Map<string, 'R' | 'B'>,
         turn: 0 | 1
-        ): [string, Piece][] => {
-    let m: Map<string, Piece> = new Map();
-    order1.forEach((v: 'R' | 'B', k: string) => {
+        ): [string, {color: 'R' | 'B', turn: 0 | 1}][] => {
+    let m: Map<string, {color: 'R' | 'B', turn: 0 | 1}> = new Map();
+    for (let [k, v] of order1) {
         const [x, y] = k.split(',').map((e: string) => +e);
         if (turn === 0) {
-            m.set(`${x},${y+2}`, new Piece(v, 0));
+            m.set(`${x},${y+2}`, {color: v, turn: 0});
         } else {
-            m.set(`${5-x},${3-y}`, new Piece(v, 0));
+            m.set(`${5-x},${3-y}`, {color: v, turn: 0});
         }
-    })
-    order2.forEach((v: 'R' | 'B', k: string) => {
+    }
+    for (let [k, v] of order2) {
         const [x, y] = k.split(',').map((e: string) => +e);
         if (turn === 0) {
-            m.set(`${5-x},${3-y}`, new Piece(v, 1));
+            m.set(`${5-x},${3-y}`, {color: v, turn: 1});
         } else {
-            m.set(`${x},${y+2}`, new Piece(v, 1));
+            m.set(`${x},${y+2}`, {color: v, turn: 1});
         }
-    })
+    }
     return [...m];
 }
 
@@ -150,9 +148,9 @@ io.on('connection', (socket: customSocket) => {
             board2 = initBoard(order1, order2, 1);
             io.to(roomId).emit('watch', board1);
             io.to(room.player1.turn === 0 ? room.player1.id : room.player2.id)
-                .emit('game', board1, 0);
+                .emit('game', board1, 0, true);
             io.to(room.player1.turn === 1 ? room.player1.id : room.player2.id)
-                .emit('game', board2, 1);
+                .emit('game', board2, 1, false);
         }
     })
 

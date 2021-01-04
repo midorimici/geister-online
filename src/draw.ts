@@ -97,7 +97,7 @@ export default class Draw {
         const ctx = this.ctx;
         //const padding: number = (this.square_size - this.piece_size)/2;
         const coord: [number, number] = new Vec(pos).mul(this.square_size)
-            .add(this.margin).add(this.square_size/2).val();
+            .add(this.margin + this.square_size/2).val();
         ctx.save();
         ctx.fillStyle = color;
         ctx.translate(...coord);
@@ -155,7 +155,8 @@ export default class Draw {
     }
 
     // ゲームボードと盤面上の駒を描く
-    board(boardmap: Map<string, Piece>, turn: 0 | 1 | 2) {
+    board(boardmap: Map<string, {color: 'R' | 'B', turn: 0 | 1}>,
+            turn: 0 | 1 | 2) {
         this.clearCanvas();
         const ctx = this.ctx;
         // グリッド
@@ -200,6 +201,25 @@ export default class Draw {
                 // 後手
                 this.piece(piece.turn === 1 ? pieceColor : config.grey,
                     pos_, piece.turn === 0);
+            }
+        }
+    }
+
+    // 駒の行先を円で表示する
+    dest(piece: Piece, pos: [number, number],
+            boardmap: Map<string, {color: 'R' | 'B', turn: 0 | 1}>) {
+        const ctx = this.ctx;
+        for (let dest of piece.coveringSquares(pos)) {
+            // 自分の駒の位置を除外
+            if (!(boardmap.has(String(dest))
+                    && boardmap.get(String(dest)).turn
+                        === boardmap.get(String(pos)).turn)) {
+                const coord = new Vec(dest).mul(this.square_size)
+                    .add(this.margin + this.square_size/2).val();
+                ctx.beginPath();
+                ctx.arc(...coord, this.piece_size/2, 0, 2*Math.PI);
+                ctx.fillStyle = config.safe;
+                ctx.fill();
             }
         }
     }
