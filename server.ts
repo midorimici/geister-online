@@ -156,14 +156,13 @@ io.on('connection', (socket: customSocket) => {
              */
             (poslist: [string, 'R' | 'B'][]) => {
         const roomId = socket.info.roomId;
-        const name = socket.info.name;
         const posmap = new Map(poslist);
         const room = rooms.get(roomId);
         room.ready = room.ready + 1;
         if (room.ready === 1) {
             // 先手
             order1 = posmap;
-            if (room.player1.name === name) {
+            if (room.player1.id === socket.id) {
                 io.to(room.player1.id).emit('wait placing');
             } else {
                 io.to(room.player2.id).emit('wait placing');
@@ -171,7 +170,7 @@ io.on('connection', (socket: customSocket) => {
         } else if (room.ready === 2) {
             // 後手
             order2 = posmap;
-            if (room.player1.name === name) {
+            if (room.player1.id === socket.id) {
                 room.player1.turn = 1;
             } else {
                 room.player2.turn = 1;

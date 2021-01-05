@@ -4,7 +4,7 @@
         <meta charset='UTF-8'>
         <meta name='viewport' content='width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1, user-scalable=no'>
         <title>Geister Online</title>
-        <link rel='stylesheet' href='./static/style.css?12282253'>
+        <link rel='stylesheet' href='./static/style.css?01051816'>
     </head>
     <body>
         <div id='container'>
@@ -12,21 +12,23 @@
                 <p>ルーム番号と参加方法を指定してください。</p>
                 <form id='form'>
                     <div>
-                        <label>
+                        <label class='form-label'>
                             ルーム
                             <input id='room-input' type='number' required min='1' max='100' name='room'>
                         </label>
                     </div>
                     <div>
-                        <label>
+                        <label class='form-label'>
                             参加方法
-                            <label><input type='radio' name='role' required value='play'>対戦する</label>
-                            <label><input type='radio' name='role' value='watch'>観戦する</label>
+                            <div>
+                                <label><input type='radio' name='role' required value='play'>対戦する</label>
+                                <label><input type='radio' name='role' value='watch'>観戦する</label>
+                            </div>
                         </label>
                     </div>
-                    <div id='username-div'>
-                        <label>
-                            ユーザー名
+                    <div>
+                        <label class='form-label'>
+                            ユーザー名（任意）
                             <input id='name-input' type='text' name='username'>
                         </label>
                     </div>

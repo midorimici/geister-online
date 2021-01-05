@@ -2,20 +2,6 @@ import Draw from './draw';
 import Mouse from './mouse';
 import Piece from './piece';
 
-// 対戦するを選択したときはユーザー名入力欄を表示
-const radios: NodeListOf<HTMLElement> = document.getElementsByName('role');
-for (let i: number = 0; i <= 1; i++) {
-    let state: string = '';
-    if (i === 0) {
-        state = 'visible';
-    } else {
-        state = 'hidden';
-    }
-    radios[i].addEventListener('click', () => {
-        document.getElementById('username-div').style.visibility = state;
-    });
-}
-
 // 入室～対戦相手待機
 
 let draw: Draw;
@@ -39,7 +25,8 @@ form.addEventListener('submit', (e: Event) => {
     const info = {
         roomId: data.get('room') as string,
         role: data.get('role') as ('play' | 'watch'),
-        name: data.get('username') as string,
+        name: data.get('username') === ''
+            ? '名無し' : data.get('username') as string,
     };
     socket.emit('enter room', info);
 }, false);

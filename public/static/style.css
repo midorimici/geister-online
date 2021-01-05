@@ -15,15 +15,17 @@ body {
     border-radius: .4rem;
 }
 
-#username-div {
-    visibility: hidden;
-}
-
 #form {
     height: 12rem;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
+}
+
+.form-label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
 #submit-btn {
