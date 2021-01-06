@@ -16,6 +16,9 @@ const initCanvas = () => {
     doneInitCanvas = true;
 }
 
+/** 対戦者か観戦者か */
+let myrole: 'play' | 'watch';
+
 // フォーム取得
 const socket: SocketIOClient.Socket = io();
 const form = document.getElementById('form') as HTMLFormElement;
@@ -28,6 +31,7 @@ form.addEventListener('submit', (e: Event) => {
         name: data.get('username') === ''
             ? '名無し' : data.get('username') as string,
     };
+    myrole = info.role;
     socket.emit('enter room', info);
 }, false);
 
@@ -177,9 +181,11 @@ socket.on('watch',
          */
         (board: [string, {color: 'R' | 'B', turn: 0 | 1}][],
         first: string, second: string) => {
-    if (!doneInitCanvas) {initCanvas()};
-    const boardmap: Map<string, {color: 'R' | 'B', turn: 0 | 1}> = new Map(board);
-    draw.board(boardmap, 2, first, second);
+    if (myrole === 'watch') {
+        if (!doneInitCanvas) {initCanvas()};
+        const boardmap: Map<string, {color: 'R' | 'B', turn: 0 | 1}> = new Map(board);
+        draw.board(boardmap, 2, first, second);
+    }
 })
 
 socket.on('player discon', (name: string) => {
