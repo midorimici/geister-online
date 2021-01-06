@@ -36,9 +36,9 @@ let order1: Map<string, 'R' | 'B'>;
 /** 後手の初期配置 */
 let order2: Map<string, 'R' | 'B'>;
 /** 先手から見た盤面 */
-let board1: [string, {color: 'R' | 'B', turn: 0 | 1}][];
+let board1: Map<string, {color: 'R' | 'B', turn: 0 | 1}>;
 /** 後手から見た盤面 */
-let board2: [string, {color: 'R' | 'B', turn: 0 | 1}][];
+let board2: Map<string, {color: 'R' | 'B', turn: 0 | 1}>;
 /** 先手の名前と socket id */
 let first: {name: string, id: string};
 /** 後手の名前と socket id */
@@ -176,8 +176,8 @@ io.on('connection', (socket: customSocket) => {
                 room.player2.turn = 1;
             }
             room.state = 'playing';
-            board1 = initBoard(order1, order2, 0);
-            board2 = initBoard(order1, order2, 1);
+            board1 = new Map(initBoard(order1, order2, 0));
+            board2 = new Map(initBoard(order1, order2, 1));
             first = room.player1.turn === 0 ? {
                 name: room.player1.name,
                 id: room.player1.id
@@ -192,9 +192,9 @@ io.on('connection', (socket: customSocket) => {
                 name: room.player2.name,
                 id: room.player2.id
             };
-            io.to(roomId).emit('watch', board1, first.name, second.name);
-            io.to(first.id).emit('game', board1, 0, true, first.name, second.name);
-            io.to(second.id).emit('game', board2, 1, false, first.name, second.name);
+            io.to(roomId).emit('watch', [...board1], first.name, second.name);
+            io.to(first.id).emit('game', [...board1], 0, true, first.name, second.name);
+            io.to(second.id).emit('game', [...board2], 1, false, first.name, second.name);
         }
     });
 
@@ -209,24 +209,20 @@ io.on('connection', (socket: customSocket) => {
         const roomId = socket.info.roomId;
         let board = [board1, board2][turn];
         let another = [board1, board2][(turn+1)%2];
-        // 先手目線のボードを更新する
-        let originIndex = board.findIndex(e => e[0] === String(origin));
-        board = board.splice(
-            originIndex, 1, [String(dest), board[originIndex][1]]
-        );
+        // turn 目線のボードを更新する
+        board.set(String(dest), board.get(String(origin)));
+        board.delete(String(origin));
         // 座標変換
         origin = origin.map((x: number) => 5-x) as [number, number];
         dest = dest.map((x: number) => 5-x) as [number, number];
-        // 後手目線のボードを更新する
-        originIndex = another.findIndex(e => e[0] === String(origin));
-        another = another.splice(
-            originIndex, 1, [String(dest), another[originIndex][1]]
-        );
+        // 相手目線のボードを更新する
+        another.set(String(dest), another.get(String(origin)));
+        another.delete(String(origin));
         // ターン交代
         curTurn = (curTurn+1)%2 as 0 | 1;
-        io.to(roomId).emit('watch', board1, first.name, second.name);
-        io.to(first.id).emit('game', board1, 0, curTurn === 0, first.name, second.name);
-        io.to(second.id).emit('game', board2, 1, curTurn === 1, first.name, second.name);
+        io.to(roomId).emit('watch', [...board1], first.name, second.name);
+        io.to(first.id).emit('game', [...board1], 0, curTurn === 0, first.name, second.name);
+        io.to(second.id).emit('game', [...board2], 1, curTurn === 1, first.name, second.name);
     });
 
     socket.on('disconnect', () => {
