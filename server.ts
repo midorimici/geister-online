@@ -168,6 +168,10 @@ io.on('connection', (socket: customSocket) => {
                 } else {
                     // 対戦者がすでに2人いて対戦中
                     socket.emit('watch', [...board1], first.name, second.name, curTurn);
+                    if (winner === 0 || winner === 1) {
+                        socket.emit('tell winner to audience and first',
+                            [first.name, second.name][winner], [...board1], first.name, second.name);
+                    }
                 }
             } else {
                 // 指定したルームがないとき
