@@ -67,7 +67,7 @@ body {
     }
 
     #game-message {
-        width: 6rem;
+        width: auto;
     }
 
     #canvas {
