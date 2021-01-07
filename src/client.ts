@@ -7,13 +7,17 @@ import Piece from './piece';
 let draw: Draw;
 /** initCanvas を実行済か */
 let doneInitCanvas: boolean = false;
+/** canvas 要素 */
+const canvas = document.getElementById('canvas') as HTMLCanvasElement;
+/** canvas 横のメッセージ */
+const gameMessage = document.getElementById('game-message');
 
-/** 入力フォームを非表示にし、canvas を表示する */
+/** 入力フォームを非表示にし、canvas などを表示する */
 const initCanvas = () => {
     document.getElementById('settings').style.display = 'none';
-    const canvas = document.getElementById('canvas') as HTMLCanvasElement;
     draw = new Draw(canvas);
     doneInitCanvas = true;
+    gameMessage.style.visibility = 'visible';
 }
 
 /** 対戦者か観戦者か */
@@ -63,7 +67,6 @@ let mouse: Mouse;
 
 socket.on('place pieces', () => {
     if (!doneInitCanvas) {initCanvas()};
-    const canvas = document.getElementById('canvas') as HTMLCanvasElement;
     const csize = canvas.width;
     /** 赤と青が同数ずつあるか */
     let satisfied: boolean = false;
@@ -128,12 +131,14 @@ socket.on('game',
         turn: 0 | 1, myturn: boolean,
         first: string, second: string) => {
     const boardmap: Map<string, {color: 'R' | 'B', turn: 0 | 1}> = new Map(board);
-    const canvas = document.getElementById('canvas') as HTMLCanvasElement;
     /** 選択中の駒の位置 */
     let selectingPos: [number, number];
     draw.board(boardmap, turn, first, second);
+    // 手番の表示
     // マウスイベント
     if (myturn) {
+        gameMessage.innerText = 'あなたの番です。';
+
         mouse = new Mouse(canvas);
         canvas.onclick = (e: MouseEvent) => {
             const sqPos = mouse.getCoord(e);
@@ -168,6 +173,8 @@ socket.on('game',
             }
         }
     } else {
+        gameMessage.innerText = '相手の番です。';
+
         canvas.onclick = () => {};
     }
 });
@@ -178,17 +185,38 @@ socket.on('watch',
          * @param board 盤面データ
          * @param first 先手のプレイヤー名
          * @param second 後手のプレイヤー名
+         * @param turn 現在のターン
          */
         (board: [string, {color: 'R' | 'B', turn: 0 | 1}][],
-        first: string, second: string) => {
+        first: string, second: string, turn: 0 | 1) => {
     if (myrole === 'watch') {
         if (!doneInitCanvas) {initCanvas()};
         const boardmap: Map<string, {color: 'R' | 'B', turn: 0 | 1}> = new Map(board);
         draw.board(boardmap, 2, first, second);
+        gameMessage.innerText = `${turn === 0 ? first : second} さんの番です。`;
     }
-})
+});
 
-socket.on('player discon', (name: string) => {
+socket.on('tell winner',
+        /** 勝者が決まったときの処理
+         * @param winner 勝者のプレイヤー名
+         * @param board 盤面データ
+         * @param first 先手のプレイヤー名
+         * @param second 後手のプレイヤー名
+        */
+        (winner: string, board: [string, {color: 'R' | 'B', turn: 0 | 1}][],
+        first: string, second: string) => {
+    gameMessage.innerText = `${winner} の勝ち！`;
+    if (myrole === 'play') {
+        canvas.onclick = () => {
+            draw.board(new Map(board), 2, first, second);
+            canvas.onclick = () => {};
+        };
+    }
+});
+
+socket.on('player discon',
+        /** @param name 接続が切れたプレイヤー名 */ (name: string) => {
     alert(`${name}さんの接続が切れました。`);
     location.reload();
 });

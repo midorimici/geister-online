@@ -41,11 +41,18 @@ body {
     background-color: #dddddd;
 }
 
-#canvas-container {
-    position: relative;
-    height: 0;
-    overflow: hidden;
-    padding-top: 100%;
+#game-container {
+    display: flex;
+}
+
+#game-message {
+    visibility: hidden;
+    font-size: larger;
+    width: 12rem;
+}
+
+#canvas {
+    margin: 0 2rem;
 }
 
 @media (max-width: 640px) {
@@ -53,8 +60,17 @@ body {
         width: 90%;
     }
 
-    #canvas {
+    #game-container {
         width: 90%;
         height: 90%;
+        flex-direction: column;
+    }
+
+    #game-message {
+        width: 6rem;
+    }
+
+    #canvas {
+        margin: 0;
     }
 }

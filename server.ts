@@ -45,6 +45,11 @@ let first: {name: string, id: string};
 let second: {name: string, id: string};
 /** 現在のターン */
 let curTurn: 0 | 1 = 0;
+/** それぞれが取った駒の色と数 */
+let takenPieces: [{'R': number, 'B': number}, {'R': number, 'B': number}]
+    = [{'R': 0, 'B': 0}, {'R': 0, 'B': 0}];
+/** 勝者 0 - 先手, 1 - 後手 */
+let winner: 0 | 1;
 
 /**
  * 初期盤面を生成する
@@ -75,6 +80,28 @@ const initBoard = (
         }
     }
     return [...m];
+}
+
+/**
+ * side が勝利条件を満たすか
+ * @param taken それぞれが取った駒の色と数
+ * @param posOnBoard 盤面上にある駒の位置リスト
+ * @param side 先手か後手か
+ * @param moved side が今駒を動かしたか
+ */
+const winReq = (taken: [{'R': number, 'B': number},
+        {'R': number, 'B': number}],
+        posOnBoard: string[], side: 0 | 1, moved: boolean): boolean => {
+    if (moved) {
+        // 青を4つ取った
+        // or 青が盤面に出た
+        return (taken[side]['B'] === 4
+            || (posOnBoard.indexOf('0,-1') !== -1
+                || posOnBoard.indexOf('5,-1') !== -1));
+    } else {
+        // 赤を4つ取らせた
+        return taken[(side+1)%2]['R'] === 4;
+    }
 }
 
 io.on('connection', (socket: customSocket) => {
@@ -140,7 +167,7 @@ io.on('connection', (socket: customSocket) => {
                     socket.emit('wait placing');
                 } else {
                     // 対戦者がすでに2人いて対戦中
-                    socket.emit('watch', board1, first.name, second.name);
+                    socket.emit('watch', [...board1], first.name, second.name, curTurn);
                 }
             } else {
                 // 指定したルームがないとき
@@ -192,7 +219,10 @@ io.on('connection', (socket: customSocket) => {
                 name: room.player2.name,
                 id: room.player2.id
             };
-            io.to(roomId).emit('watch', [...board1], first.name, second.name);
+            curTurn = 0;
+            takenPieces = [{'R': 0, 'B': 0}, {'R': 0, 'B': 0}];
+            winner = undefined;
+            io.to(roomId).emit('watch', [...board1], first.name, second.name, curTurn);
             io.to(first.id).emit('game', [...board1], 0, true, first.name, second.name);
             io.to(second.id).emit('game', [...board2], 1, false, first.name, second.name);
         }
@@ -209,6 +239,11 @@ io.on('connection', (socket: customSocket) => {
         const roomId = socket.info.roomId;
         let board = [board1, board2][turn];
         let another = [board1, board2][(turn+1)%2];
+        // 相手の駒を取ったとき
+        if (board.has(String(dest)) && board.get(String(dest)).turn !== turn) {
+            // 取った駒の色を記録する
+            takenPieces[turn][board.get(String(dest)).color] += 1;
+        }
         // turn 目線のボードを更新する
         board.set(String(dest), board.get(String(origin)));
         board.delete(String(origin));
@@ -220,9 +255,21 @@ io.on('connection', (socket: customSocket) => {
         another.delete(String(origin));
         // ターン交代
         curTurn = (curTurn+1)%2 as 0 | 1;
-        io.to(roomId).emit('watch', [...board1], first.name, second.name);
+        // 勝敗判定
+        if (winReq(takenPieces, Array.from(board.keys()), turn, true)) {
+            winner = turn;
+        } else if (winReq(takenPieces, Array.from(board.keys()), (turn+1)%2 as 0 | 1, false)) {
+            winner = (turn+1)%2 as 0 | 1;
+        }
+        // 盤面データをクライアントへ
+        io.to(roomId).emit('watch', [...board1], first.name, second.name, curTurn);
         io.to(first.id).emit('game', [...board1], 0, curTurn === 0, first.name, second.name);
         io.to(second.id).emit('game', [...board2], 1, curTurn === 1, first.name, second.name);
+        // 勝者を通知する
+        if (winner === 0 || winner === 1) {
+            io.to(roomId).emit('tell winner',
+                [first.name, second.name][winner], [...board1], first.name, second.name);
+        }
     });
 
     socket.on('disconnect', () => {
