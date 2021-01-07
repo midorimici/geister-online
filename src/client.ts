@@ -192,12 +192,12 @@ socket.on('watch',
     if (myrole === 'watch') {
         if (!doneInitCanvas) {initCanvas()};
         const boardmap: Map<string, {color: 'R' | 'B', turn: 0 | 1}> = new Map(board);
-        draw.board(boardmap, 2, first, second);
+        draw.board(boardmap, 0, first, second, true);
         gameMessage.innerText = `${turn === 0 ? first : second} さんの番です。`;
     }
 });
 
-socket.on('tell winner',
+socket.on('tell winner to audience and first',
         /** 勝者が決まったときの処理
          * @param winner 勝者のプレイヤー名
          * @param board 盤面データ
@@ -209,10 +209,26 @@ socket.on('tell winner',
     gameMessage.innerText = `${winner} の勝ち！`;
     if (myrole === 'play') {
         canvas.onclick = () => {
-            draw.board(new Map(board), 2, first, second);
+            draw.board(new Map(board), 0, first, second, true);
             canvas.onclick = () => {};
         };
     }
+});
+
+socket.on('tell winner to second',
+        /** 勝者が決まったときの処理
+         * @param winner 勝者のプレイヤー名
+         * @param board 盤面データ
+         * @param first 先手のプレイヤー名
+         * @param second 後手のプレイヤー名
+        */
+       (winner: string, board: [string, {color: 'R' | 'B', turn: 0 | 1}][],
+       first: string, second: string) => {
+    gameMessage.innerText = `${winner} の勝ち！`;
+    canvas.onclick = () => {
+        draw.board(new Map(board), 1, first, second, true);
+        canvas.onclick = () => {};
+    };
 });
 
 socket.on('player discon',

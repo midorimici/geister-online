@@ -183,13 +183,13 @@ export default class Draw {
 
     /** ゲームボードと盤面上の駒を描く
      * @param boardmap 盤面データ
-     * @param turn 先手後手どちら目線か。
-     * 2 なら先手目線で駒色は隠さない
+     * @param turn 先手後手どちら目線か
      * @param first 先手のプレイヤー名
      * @param second 後手のプレイヤー名
+     * @param showAll すべての駒色を隠さず表示する
      */
     board(boardmap: Map<string, {color: 'R' | 'B', turn: 0 | 1}>,
-            turn: 0 | 1 | 2, first: string, second: string) {
+            turn: 0 | 1, first: string, second: string, showAll: boolean = false) {
         this.clearCanvas();
         const ctx = this.ctx;
 
@@ -226,16 +226,13 @@ export default class Draw {
         for (let [pos, piece] of boardmap.entries()) {
             const pieceColor = piece.color === 'R' ? config.red : config.blue;
             const pos_ = pos.split(',').map((e: string) => +e) as [number, number];
-            if (turn === 2) {
-                // 観戦者は両方見える。先手目線
-                this.piece(pieceColor, pos_, piece.turn === 1);
-            } else if (turn === 0) {
+            if (turn === 0) {
                 // 先手
-                this.piece(piece.turn === 0 ? pieceColor : config.grey,
+                this.piece((showAll || piece.turn === 0) ? pieceColor : config.grey,
                     pos_, piece.turn === 1);
             } else {
                 // 後手
-                this.piece(piece.turn === 1 ? pieceColor : config.grey,
+                this.piece((showAll || piece.turn === 1) ? pieceColor : config.grey,
                     pos_, piece.turn === 0);
             }
         }

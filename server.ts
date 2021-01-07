@@ -267,8 +267,10 @@ io.on('connection', (socket: customSocket) => {
         io.to(second.id).emit('game', [...board2], 1, curTurn === 1, first.name, second.name);
         // 勝者を通知する
         if (winner === 0 || winner === 1) {
-            io.to(roomId).emit('tell winner',
+            io.to(roomId).emit('tell winner to audience and first',
                 [first.name, second.name][winner], [...board1], first.name, second.name);
+            io.to(second.id).emit('tell winner to second',
+                [first.name, second.name][winner], [...board2], first.name, second.name);
         }
     });
 
