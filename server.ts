@@ -167,10 +167,12 @@ io.on('connection', (socket: customSocket) => {
                     socket.emit('wait placing');
                 } else {
                     // 対戦者がすでに2人いて対戦中
-                    socket.emit('watch', [...board1], first.name, second.name, curTurn);
+                    socket.emit('watch',
+                        [...board1], first.name, second.name, curTurn, takenPieces);
                     if (winner === 0 || winner === 1) {
                         socket.emit('tell winner to audience and first',
-                            [first.name, second.name][winner], [...board1], first.name, second.name);
+                            [first.name, second.name][winner], [...board1],
+                            first.name, second.name, takenPieces);
                     }
                 }
             } else {
@@ -226,9 +228,12 @@ io.on('connection', (socket: customSocket) => {
             curTurn = 0;
             takenPieces = [{'R': 0, 'B': 0}, {'R': 0, 'B': 0}];
             winner = undefined;
-            io.to(roomId).emit('watch', [...board1], first.name, second.name, curTurn);
-            io.to(first.id).emit('game', [...board1], 0, true, first.name, second.name);
-            io.to(second.id).emit('game', [...board2], 1, false, first.name, second.name);
+            io.to(roomId).emit('watch',
+                [...board1], first.name, second.name, curTurn, takenPieces);
+            io.to(first.id).emit('game',
+                [...board1], 0, true, first.name, second.name, takenPieces);
+            io.to(second.id).emit('game',
+                [...board2], 1, false, first.name, second.name, takenPieces);
         }
     });
 
@@ -266,15 +271,20 @@ io.on('connection', (socket: customSocket) => {
             winner = (turn+1)%2 as 0 | 1;
         }
         // 盤面データをクライアントへ
-        io.to(roomId).emit('watch', [...board1], first.name, second.name, curTurn);
-        io.to(first.id).emit('game', [...board1], 0, curTurn === 0, first.name, second.name);
-        io.to(second.id).emit('game', [...board2], 1, curTurn === 1, first.name, second.name);
+        io.to(roomId).emit('watch',
+            [...board1], first.name, second.name, curTurn, takenPieces);
+        io.to(first.id).emit('game',
+            [...board1], 0, curTurn === 0, first.name, second.name, takenPieces);
+        io.to(second.id).emit('game',
+            [...board2], 1, curTurn === 1, first.name, second.name, takenPieces);
         // 勝者を通知する
         if (winner === 0 || winner === 1) {
             io.to(roomId).emit('tell winner to audience and first',
-                [first.name, second.name][winner], [...board1], first.name, second.name);
+                [first.name, second.name][winner], [...board1]
+                , first.name, second.name, takenPieces);
             io.to(second.id).emit('tell winner to second',
-                [first.name, second.name][winner], [...board2], first.name, second.name);
+                [first.name, second.name][winner], [...board2]
+                , first.name, second.name, takenPieces);
         }
     });
 
