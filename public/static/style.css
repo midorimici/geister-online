@@ -45,6 +45,20 @@ body {
     display: flex;
 }
 
+#mute-icon {
+    visibility: hidden;
+    margin-right: 1rem;
+    cursor: pointer;
+    width: 2rem;
+    height: 2rem;
+    transition: transform .3s;
+    will-change: transform;
+}
+
+#mute-icon:hover {
+    transform: scale(1.2);
+}
+
 #game-message {
     visibility: hidden;
     font-size: larger;
@@ -64,6 +78,10 @@ body {
         width: 90%;
         height: 90%;
         flex-direction: column;
+    }
+
+    #mute-icon {
+        margin-right: 0;
     }
 
     #game-message {
