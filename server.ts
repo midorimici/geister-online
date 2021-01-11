@@ -288,6 +288,10 @@ io.on('connection', (socket: customSocket) => {
         }
     });
 
+    socket.on('chat message', (msg: string) => {
+        io.to(socket.info.roomId).emit('chat message', msg, socket.info.name);
+    })
+
     socket.on('disconnect', () => {
         const info = socket.info;
         // 接続が切れたとき

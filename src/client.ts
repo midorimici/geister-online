@@ -21,10 +21,8 @@ const initCanvas = () => {
     document.getElementById('settings').style.display = 'none';
     draw = new Draw(canvas);
     doneInitCanvas = true;
-    gameMessage.style.visibility = 'visible';
-    muteButton.style.visibility = 'visible';
-    console.log(muteButton);
-}
+    document.getElementById('game-container').style.visibility = 'visible';
+};
 
 /** 対戦者か観戦者か */
 let myrole: 'play' | 'watch';
@@ -82,7 +80,7 @@ let mouse: Mouse;
  */
 const snd = (file: string) => {
     new Audio(`./static/sounds/${file}.wav`).play();
-}
+};
 
 // 駒を配置する処理
 socket.on('place pieces', () => {
@@ -298,4 +296,32 @@ muteButton.onclick = () => {
         ? './static/volume-mute-solid.svg'
         : './static/volume-up-solid.svg';
     muted = !muted;
-}
+};
+
+
+
+// チャット
+const chatForm = document.getElementById('chat-form') as HTMLFormElement;
+const chatInput = document.getElementById('chat-input') as HTMLInputElement;
+const chatSendButton = document.getElementById('chat-send-icon');
+chatForm.addEventListener('submit', (e: Event) => {
+    e.preventDefault();
+    if (chatInput.value) {
+        socket.emit('chat message', chatInput.value);
+        chatInput.value = '';
+    }
+});
+
+chatSendButton.onclick = () => {
+    if (chatInput.value) {
+        socket.emit('chat message', chatInput.value);
+        chatInput.value = '';
+    }
+};
+
+const ul = document.getElementById('chat-messages');
+socket.on('chat message', (msg: string, name: string) => {
+    const item = document.createElement('li');
+    item.innerText = `${name} : ${msg}`;
+    ul.appendChild(item);
+})
