@@ -53,6 +53,7 @@ body {
 #mute-icon {
     margin-right: 1rem;
     cursor: pointer;
+    flex-shrink: 0;
     width: 2rem;
     height: 2rem;
     transition: transform .3s;
@@ -66,21 +67,42 @@ body {
 #game-message {
     font-size: larger;
     width: 12rem;
+    flex-shrink: 0;
+}
+
+#canvas {
+    margin: 0 2rem;
+    flex-shrink: 0;
 }
 
 #chat {
     flex-grow: 3;
 }
 
+#chat-icon {
+    width: 2rem;
+    height: 2rem;
+}
+
 #chat-messages {
-    height: 90%;
+    height: 86%;
     list-style: none;
     padding: 0;
     overflow: auto;
 }
 
+#chat-messages > li {
+    display: flex;
+}
+
 #chat-messages > li:nth-child(odd) {
     background-color: antiquewhite;
+}
+
+.chat-name {
+    display: inline-block;
+    min-width: 8rem;
+    margin-right: 1rem;
 }
 
 #chat-form {
@@ -111,10 +133,6 @@ body {
     background-color: wheat;
 }
 
-#canvas {
-    margin: 0 2rem;
-}
-
 @media (max-width: 640px) {
     #container {
         width: 90%;
@@ -137,5 +155,9 @@ body {
 
     #canvas {
         margin: 0;
+    }
+
+    #chat-messages {
+        height: 9rem;
     }
 }

@@ -295,6 +295,7 @@ muteButton.onclick = () => {
     muteButton.src = muted
         ? './static/volume-mute-solid.svg'
         : './static/volume-up-solid.svg';
+    muteButton.title = muted ? 'ミュート' : 'ミュート解除';
     muted = !muted;
 };
 
@@ -322,6 +323,13 @@ chatSendButton.onclick = () => {
 const ul = document.getElementById('chat-messages');
 socket.on('chat message', (msg: string, name: string) => {
     const item = document.createElement('li');
-    item.innerText = `${name} : ${msg}`;
+    const nameSpan = document.createElement('span');
+    const msgSpan = document.createElement('span');
+    nameSpan.className = 'chat-name';
+    nameSpan.innerText = name;
+    msgSpan.innerText = msg;
+    item.appendChild(nameSpan);
+    item.appendChild(msgSpan);
     ul.appendChild(item);
+    ul.scrollTop = ul.scrollHeight;
 })
