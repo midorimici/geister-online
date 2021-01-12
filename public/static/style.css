@@ -44,8 +44,7 @@ body {
 }
 
 #game-container {
-    visibility: hidden;
-    display: flex;
+    display: none;
     width: 90%;
     height: 90%;
 }
@@ -133,7 +132,22 @@ body {
     background-color: wheat;
 }
 
-@media (max-width: 640px) {
+@media (max-width: 720px), (max-height: 720px) {
+    #container {
+        width: 90%;
+        margin: 0;
+    }
+
+    #game-message {
+        width: auto;
+    }
+
+    #chat-messages {
+        height: 60%;
+    }
+}
+
+@media (orientation: portrait) {
     #container {
         width: 90%;
         margin: 0;
@@ -157,7 +171,13 @@ body {
         margin: 0;
     }
 
+    #chat-icon {
+        margin-top: 1rem;
+    }
+}
+
+@media (orientation: portrait) and (max-width: 720px) {
     #chat-messages {
-        height: 9rem;
+        height: 7rem;
     }
 }

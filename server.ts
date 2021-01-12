@@ -152,8 +152,6 @@ io.on('connection', (socket: customSocket) => {
                 socket.join(info.roomId);
                 socket.emit('wait opponent');
             }
-            // デバッグ
-            console.log(rooms);
         } else {
             // 観戦者として参加
             if (room) {

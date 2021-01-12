@@ -21,7 +21,7 @@ const initCanvas = () => {
     document.getElementById('settings').style.display = 'none';
     draw = new Draw(canvas);
     doneInitCanvas = true;
-    document.getElementById('game-container').style.visibility = 'visible';
+    document.getElementById('game-container').style.display = 'flex';
 };
 
 /** 対戦者か観戦者か */
