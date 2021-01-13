@@ -15,7 +15,7 @@ app.get('/', (req, res) => {
 // socket.info を使えるようにする
 interface customSocket extends socketio.Socket {
     info: {
-        roomId: string, role: string, name: string
+        roomId: string, role: 'play' | 'watch', name: string
     }
 }
 
@@ -110,7 +110,7 @@ io.on('connection', (socket: customSocket) => {
              * 入室したときのサーバ側の処理
              * @param info 入室者のデータ
              */
-            (info: {roomId: string, role: string, name: string}) => {
+            (info: {roomId: string, role: 'play' | 'watch', name: string}) => {
         socket.info = info;
         const room = rooms.get(info.roomId);
         if (info.role === 'play') {
@@ -287,7 +287,8 @@ io.on('connection', (socket: customSocket) => {
     });
 
     socket.on('chat message', (msg: string) => {
-        io.to(socket.info.roomId).emit('chat message', msg, socket.info.name);
+        io.to(socket.info.roomId).emit('chat message',
+            msg, socket.info.role === 'play', socket.info.name);
     })
 
     socket.on('disconnect', () => {

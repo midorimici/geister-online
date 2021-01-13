@@ -294,8 +294,8 @@ socket.on('player discon',
 // ミュートボタン
 muteButton.onclick = () => {
     muteButton.src = muted
-        ? './static/volume-up-solid.svg'
-        : './static/volume-mute-solid.svg';
+        ? './static/svg/volume-up-solid.svg'
+        : './static/svg/volume-mute-solid.svg';
     muteButton.title = muted ? 'ミュート' : 'ミュート解除';
     muted = !muted;
 };
@@ -322,15 +322,35 @@ chatSendButton.onclick = () => {
 };
 
 const ul = document.getElementById('chat-messages');
-socket.on('chat message', (msg: string, name: string) => {
+socket.on('chat message', 
+        /**
+         * チャット受信の処理
+         * @param msg 入力されたメッセージ
+         * @param isPlayer 入力した人が対戦者か
+         * @param name 入力した人の名前
+         */
+        (msg: string, isPlayer: boolean, name: string) => {
     const item = document.createElement('li');
+
     const nameSpan = document.createElement('span');
-    const msgSpan = document.createElement('span');
     nameSpan.className = 'chat-name';
     nameSpan.innerText = name;
-    msgSpan.innerText = msg;
+
+    if (isPlayer) {
+        const icon = document.createElement('img');
+        icon.className = 'chat-player-icon';
+        icon.src = './static/svg/ghost-solid.svg';
+        icon.alt = 'player-icon';
+        icon.title = '対戦者';
+        nameSpan.appendChild(icon);
+    }
+
     item.appendChild(nameSpan);
+
+    const msgSpan = document.createElement('span');
+    msgSpan.innerText = msg;
     item.appendChild(msgSpan);
+
     ul.appendChild(item);
     ul.scrollTop = ul.scrollHeight;
 });
