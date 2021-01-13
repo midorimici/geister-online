@@ -6,6 +6,12 @@ body {
     margin: 0;
 }
 
+#logo {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+}
+
 #container {
     margin-top: 3rem;
     width: 24rem;
