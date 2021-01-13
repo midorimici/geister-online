@@ -170,6 +170,7 @@ socket.on('game',
     // マウスイベント
     if (myturn) {
         gameMessage.innerText = 'あなたの番です。';
+        if (!muted) snd('move');
 
         mouse = new Mouse(canvas);
         canvas.onclick = (e: MouseEvent) => {
