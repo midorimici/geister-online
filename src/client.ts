@@ -14,7 +14,7 @@ const gameMessage = document.getElementById('game-message');
 /** ミュートボタン */
 const muteButton = document.getElementById('mute-icon') as HTMLImageElement;
 /** ミュート状態か */
-let muted: boolean = false;
+let muted: boolean = true;
 
 /** 入力フォームを非表示にし、canvas などを表示する */
 const initCanvas = () => {
@@ -293,8 +293,8 @@ socket.on('player discon',
 // ミュートボタン
 muteButton.onclick = () => {
     muteButton.src = muted
-        ? './static/volume-mute-solid.svg'
-        : './static/volume-up-solid.svg';
+        ? './static/volume-up-solid.svg'
+        : './static/volume-mute-solid.svg';
     muteButton.title = muted ? 'ミュート' : 'ミュート解除';
     muted = !muted;
 };
