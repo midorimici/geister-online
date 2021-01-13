@@ -56,6 +56,24 @@
             </div>
         </section>
         <img id='logo' src='./static/logo/logo.png' width='160' alt='logo'>
+        <img id='info-icon' src='./static/question-circle-regular.svg' alt='info' title='このアプリについて'>
+        <div id='info-overlay'>
+            <div id='info-mask'></div>
+            <div id='info-description'>
+                <img id='close-icon' src='./static/times-solid.svg' alt='close' title='閉じる'>
+                <p>このアプリはオンラインでガイスターの対戦ができるものです。</p>
+                <strong>【対戦する】</strong>
+                <p>ルーム番号を指定して部屋をつくり、対戦者を待ちます。</p>
+                <p>すでに対戦者がいる場合はすぐに試合が始まります。</p>
+                <p>駒の初期配置を決めたらゲームスタートです。</p>
+                <strong>【観戦する】</strong>
+                <p>対戦中の部屋のルーム番号を指定すると、ゲームを観戦することができます。</p>
+                <p>観戦者には両方の対戦者の駒の種類が見えます。</p>
+                <strong>【注意】</strong>
+                <p>チャット機能もありますが、部屋にいる人は誰でも見ることができるので、</p>
+                <p>プライベートな情報を書き込まないようにしてください。</p>
+            </div>
+        </div>
         <script src='/socket.io/socket.io.js'></script>
         <script src='./bundle.js'></script>
     </body>

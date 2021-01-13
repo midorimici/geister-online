@@ -332,4 +332,17 @@ socket.on('chat message', (msg: string, name: string) => {
     item.appendChild(msgSpan);
     ul.appendChild(item);
     ul.scrollTop = ul.scrollHeight;
-})
+});
+
+
+
+// info ボタン
+const infoBtn = document.getElementById('info-icon');
+infoBtn.onclick = () => {
+    document.getElementById('info-overlay').style.display = 'flex';
+};
+
+const infoCloseBtn = document.getElementById('close-icon');
+infoCloseBtn.onclick = () => {
+    document.getElementById('info-overlay').style.display = 'none';
+};
