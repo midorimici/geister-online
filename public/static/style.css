@@ -144,6 +144,12 @@ body {
     bottom: 0;
 }
 
+footer {
+    position: absolute;
+    bottom: 1rem;
+    left: 10rem;
+}
+
 #info-icon {
     position: absolute;
     right: 2rem;
