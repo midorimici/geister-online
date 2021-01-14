@@ -307,7 +307,4 @@ io.on('connection', (socket: customSocket) => {
     });
 });
 
-const port = process.env.PORT || 3000;
-server.listen(port, () => {
-    console.log(`listening on ${port}`);
-});
+server.listen(process.env.PORT || 3000);
