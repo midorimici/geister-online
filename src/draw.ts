@@ -11,6 +11,7 @@ export default class Draw {
     private arrowPath: Path2D;
 
     /**
+     * - 画面のサイズによってロゴ、fotter など消去
      * - canvas サイズ設定
      * - context 作成
      * - プロパティ定義
@@ -20,6 +21,13 @@ export default class Draw {
     constructor(canvas: HTMLCanvasElement) {
         const cw: number = document.documentElement.clientWidth;
         const ch: number = document.documentElement.clientHeight;
+
+        if (cw < ch || ch < 720) {
+            document.getElementById('logo').style.display = 'none';
+            document.getElementById('info-icon').style.display = 'none';
+            document.getElementsByTagName('footer')[0].style.display = 'none';
+        }
+
         const min: number = cw < ch ? cw : ch;
         const cvsize: string = (0.9*min).toString();
         canvas.setAttribute('width', cvsize);

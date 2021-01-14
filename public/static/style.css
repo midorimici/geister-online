@@ -206,18 +206,48 @@ footer {
 
 
 
+/* レスポンシブ対応 */
+@media (max-width: 640px) {
+    #logo {
+        width: 120px;
+    }
+
+    #info-description {
+        padding-top: 3rem;
+    }
+
+    #close-icon {
+        top: 1rem;
+    }
+}
+
+@media (max-height: 520px) {
+    #logo {
+        width: 120px;
+    }
+
+    #info-description {
+        font-size: 70%;
+    }
+
+    #chat-messages {
+        height: 60%;
+    }
+}
+
 @media (max-width: 720px), (max-height: 720px) {
     #container {
         width: 90%;
         margin: 0;
     }
 
-    #game-message {
+    #game-container {
         width: auto;
+        height: auto;
     }
 
-    #chat-messages {
-        height: 60%;
+    #game-message {
+        width: auto;
     }
 }
 
@@ -228,8 +258,6 @@ footer {
     }
 
     #game-container {
-        width: 90%;
-        height: 90%;
         flex-direction: column;
     }
 
@@ -248,10 +276,8 @@ footer {
     #chat-icon {
         margin-top: 1rem;
     }
-}
 
-@media (orientation: portrait) and (max-width: 720px) {
     #chat-messages {
-        height: 7rem;
+        height: 60%;
     }
 }
