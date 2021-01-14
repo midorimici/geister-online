@@ -11,14 +11,18 @@ let doneInitCanvas: boolean = false;
 const canvas = document.getElementById('canvas') as HTMLCanvasElement;
 /** canvas 横のメッセージ */
 const gameMessage = document.getElementById('game-message');
+/** ミュートボタン */
+const muteButton = document.getElementById('mute-icon') as HTMLImageElement;
+/** ミュート状態か */
+let muted: boolean = true;
 
 /** 入力フォームを非表示にし、canvas などを表示する */
 const initCanvas = () => {
     document.getElementById('settings').style.display = 'none';
     draw = new Draw(canvas);
     doneInitCanvas = true;
-    gameMessage.style.visibility = 'visible';
-}
+    document.getElementById('game-container').style.display = 'flex';
+};
 
 /** 対戦者か観戦者か */
 let myrole: 'play' | 'watch';
@@ -39,20 +43,25 @@ form.addEventListener('submit', (e: Event) => {
     socket.emit('enter room', info);
 }, false);
 
+// 部屋がいっぱいだったとき
 socket.on('room full', /** @param id 部屋番号 */ (id: string) => {
     const p: HTMLElement = document.getElementById('message');
     p.innerText = `ルーム ${id} はいっぱいです。対戦者として参加することはできません。`;
 });
 
+// 空室を観戦しようとしたとき
 socket.on('no room', /** @param id 部屋番号 */ (id: string)=> {
     const p: HTMLElement = document.getElementById('message');
     p.innerText = `ルーム ${id} では対戦が行われていません。`;
 });
 
+// 対戦相手を待っているとき
 socket.on('wait opponent', () => {
     if (!doneInitCanvas) {initCanvas()};
     draw.waitingPlayer();
 });
+
+
 
 // 駒配置
 /** 位置と色の Map */
@@ -65,11 +74,21 @@ for (let i = 1; i <= 4; i++) {
 
 let mouse: Mouse;
 
+/**
+ * 音声を再生する
+ * @param file ファイル名。拡張子除く
+ */
+const snd = (file: string) => {
+    new Audio(`./static/sounds/${file}.wav`).play();
+};
+
+// 駒を配置する処理
 socket.on('place pieces', () => {
     if (!doneInitCanvas) {initCanvas()};
     const csize = canvas.width;
     /** 赤と青が同数ずつあるか */
     let satisfied: boolean = false;
+    //const selectSnd = new Audio('./static/sounds/select.wav');
 
     /**
      * 赤と青が同数ずつあるかチェックする
@@ -90,6 +109,7 @@ socket.on('place pieces', () => {
     // マウスイベント
     mouse = new Mouse(canvas);
     canvas.onclick = (e: MouseEvent) => {
+        // 駒配置
         for (let i = 1; i <= 4; i++) {
             for (let j = 2; j <= 3; j++) {
                 if (String(mouse.getCoord(e)) === String([i, j])) {
@@ -97,27 +117,36 @@ socket.on('place pieces', () => {
                         posmap.get(`${i},${j}`) === 'R'
                             ? 'B' : 'R');
                     satisfied = checkColor(Array.from(posmap.values()));
+                    if (!muted) snd('select');
                 }
             }
         }
+        // ボタン
         if (mouse.onArea(...mouse.getWindowPos(e),
                 csize*5/6, csize*5/6, csize/8, csize/12)) {
             if (satisfied) {
                 canvas.onclick = () => {};
                 socket.emit('decided place', [...posmap.entries()]);
+                if (!muted) snd('decide');
             } else {
-                console.log('ng');
+                if (!muted) snd('forbid');
             }
         }
         drawDisp();
     }
 });
 
+// 駒の配置を待つ処理
 socket.on('wait placing', () => {
     if (!doneInitCanvas) {initCanvas()};
     draw.waitingPlacing();
 });
 
+
+
+// ゲーム進行
+
+// 対戦者の処理
 socket.on('game', 
         /**
          * 対戦者側のゲーム処理
@@ -141,6 +170,7 @@ socket.on('game',
     // マウスイベント
     if (myturn) {
         gameMessage.innerText = 'あなたの番です。';
+        if (!muted) snd('move');
 
         mouse = new Mouse(canvas);
         canvas.onclick = (e: MouseEvent) => {
@@ -167,6 +197,7 @@ socket.on('game',
                         // 駒の移動
                         boardmap.set(String(sqPos), boardmap.get(String(selectingPos)));
                         boardmap.delete(String(selectingPos));
+                        if (!muted) snd('move');
                         // サーバへ移動データを渡す
                         socket.emit('move piece', turn, selectingPos, sqPos);
                     }
@@ -184,6 +215,7 @@ socket.on('game',
     }
 });
 
+// 観戦者の処理
 socket.on('watch',
         /**
          * 観戦者側のゲーム処理
@@ -202,9 +234,11 @@ socket.on('watch',
         draw.board(boardmap, 0, first, second, true);
         draw.takenPieces(takenPieces, 0);
         gameMessage.innerText = `${turn === 0 ? first : second} さんの番です。`;
+        if (!muted) snd('move');
     }
 });
 
+// 勝者が決まったとき（観戦者と先手）
 socket.on('tell winner to audience and first',
         /** 勝者が決まったときの処理
          * @param winner 勝者のプレイヤー名
@@ -217,6 +251,7 @@ socket.on('tell winner to audience and first',
         first: string, second: string,
         takenPieces: [{'R': number, 'B': number}, {'R': number, 'B': number}]) => {
     gameMessage.innerText = `${winner} の勝ち！`;
+    if (!muted) snd('win');
     if (myrole === 'play') {
         canvas.onclick = () => {
             draw.board(new Map(board), 0, first, second, true);
@@ -226,6 +261,7 @@ socket.on('tell winner to audience and first',
     }
 });
 
+// 勝者が決まったとき（後手）
 socket.on('tell winner to second',
         /** 勝者が決まったときの処理
          * @param winner 勝者のプレイヤー名
@@ -238,6 +274,7 @@ socket.on('tell winner to second',
        first: string, second: string,
        takenPieces: [{'R': number, 'B': number}, {'R': number, 'B': number}]) => {
     gameMessage.innerText = `${winner} の勝ち！`;
+    if (!muted) snd('win');
     canvas.onclick = () => {
         draw.board(new Map(board), 1, first, second, true);
         draw.takenPieces(takenPieces, 1);
@@ -245,8 +282,88 @@ socket.on('tell winner to second',
     };
 });
 
+// 接続が切れたとき
 socket.on('player discon',
         /** @param name 接続が切れたプレイヤー名 */ (name: string) => {
     alert(`${name}さんの接続が切れました。`);
     location.reload();
 });
+
+
+
+// ミュートボタン
+muteButton.onclick = () => {
+    muteButton.src = muted
+        ? './static/svg/volume-up-solid.svg'
+        : './static/svg/volume-mute-solid.svg';
+    muteButton.title = muted ? 'ミュート' : 'ミュート解除';
+    muted = !muted;
+};
+
+
+
+// チャット
+const chatForm = document.getElementById('chat-form') as HTMLFormElement;
+const chatInput = document.getElementById('chat-input') as HTMLInputElement;
+const chatSendButton = document.getElementById('chat-send-icon');
+chatForm.addEventListener('submit', (e: Event) => {
+    e.preventDefault();
+    if (chatInput.value) {
+        socket.emit('chat message', chatInput.value);
+        chatInput.value = '';
+    }
+});
+
+chatSendButton.onclick = () => {
+    if (chatInput.value) {
+        socket.emit('chat message', chatInput.value);
+        chatInput.value = '';
+    }
+};
+
+const ul = document.getElementById('chat-messages');
+socket.on('chat message', 
+        /**
+         * チャット受信の処理
+         * @param msg 入力されたメッセージ
+         * @param isPlayer 入力した人が対戦者か
+         * @param name 入力した人の名前
+         */
+        (msg: string, isPlayer: boolean, name: string) => {
+    const item = document.createElement('li');
+
+    const nameSpan = document.createElement('span');
+    nameSpan.className = 'chat-name';
+    nameSpan.innerText = name;
+
+    if (isPlayer) {
+        const icon = document.createElement('img');
+        icon.className = 'chat-player-icon';
+        icon.src = './static/svg/ghost-solid.svg';
+        icon.alt = 'player-icon';
+        icon.title = '対戦者';
+        nameSpan.appendChild(icon);
+    }
+
+    item.appendChild(nameSpan);
+
+    const msgSpan = document.createElement('span');
+    msgSpan.innerText = msg;
+    item.appendChild(msgSpan);
+
+    ul.appendChild(item);
+    ul.scrollTop = ul.scrollHeight;
+});
+
+
+
+// info ボタン
+const infoBtn = document.getElementById('info-icon');
+infoBtn.onclick = () => {
+    document.getElementById('info-overlay').style.display = 'flex';
+};
+
+const infoCloseBtn = document.getElementById('close-icon');
+infoCloseBtn.onclick = () => {
+    document.getElementById('info-overlay').style.display = 'none';
+};
