@@ -1,12 +1,16 @@
-
 import * as express from 'express';
 import * as http from 'http';
 import * as socketio from 'socket.io';
 
 const app: express.Express = express();
-app.use(express.static(process.cwd() + '/public'))
+app.use(express.static(process.cwd() + '/public'));
 const server: http.Server = http.createServer(app);
-const io: socketio.Server = require('socket.io')(server);
+const io: socketio.Server = require('socket.io')(server, {
+    cors: {
+        origin: 'https://geister-online.netlify.app',
+        methods: ['GET', 'POST']
+    }
+});
 
 app.get('/', (req, res) => {
     res.sendFile(process.cwd() + '/public/index.html');
