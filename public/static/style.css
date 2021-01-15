@@ -242,11 +242,6 @@ footer {
         margin: 0;
     }
 
-    #game-container {
-        width: auto;
-        height: auto;
-    }
-
     #game-message {
         width: auto;
     }
