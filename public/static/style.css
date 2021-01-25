@@ -4,6 +4,7 @@ body {
     align-items: center;
     height: 100vh;
     margin: 0;
+    font-family: 'Cica', 'Meiryo';
 }
 
 
@@ -96,6 +97,7 @@ body {
 
 #chat-messages > li {
     display: flex;
+    padding: .4rem;
 }
 
 #chat-messages > li:nth-child(odd) {

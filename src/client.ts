@@ -28,7 +28,8 @@ const initCanvas = () => {
 let myrole: 'play' | 'watch';
 
 // フォーム取得
-const socket: SocketIOClient.Socket = io('https://geister-online.herokuapp.com');
+// production: https://geister-online.herokuapp.com
+const socket: SocketIOClient.Socket = io();
 const form = document.getElementById('form') as HTMLFormElement;
 form.addEventListener('submit', (e: Event) => {
     e.preventDefault();
@@ -79,7 +80,7 @@ let mouse: Mouse;
  * @param file ファイル名。拡張子除く
  */
 const snd = (file: string) => {
-    new Audio(`./static/sounds/${file}.wav`).play();
+    new Audio(`../static/sounds/${file}.wav`).play();
 };
 
 // 駒を配置する処理
@@ -88,7 +89,7 @@ socket.on('place pieces', () => {
     const csize = canvas.width;
     /** 赤と青が同数ずつあるか */
     let satisfied: boolean = false;
-    //const selectSnd = new Audio('./static/sounds/select.wav');
+    //const selectSnd = new Audio('../static/sounds/select.wav');
 
     /**
      * 赤と青が同数ずつあるかチェックする
@@ -294,8 +295,8 @@ socket.on('player discon',
 // ミュートボタン
 muteButton.onclick = () => {
     muteButton.src = muted
-        ? './static/svg/volume-up-solid.svg'
-        : './static/svg/volume-mute-solid.svg';
+        ? '../static/svg/volume-up-solid.svg'
+        : '../static/svg/volume-mute-solid.svg';
     muteButton.title = muted ? 'ミュート' : 'ミュート解除';
     muted = !muted;
 };
@@ -339,7 +340,7 @@ socket.on('chat message',
     if (isPlayer) {
         const icon = document.createElement('img');
         icon.className = 'chat-player-icon';
-        icon.src = './static/svg/ghost-solid.svg';
+        icon.src = '../static/svg/ghost-solid.svg';
         icon.alt = 'player-icon';
         icon.title = '対戦者';
         nameSpan.appendChild(icon);

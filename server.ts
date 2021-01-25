@@ -13,7 +13,7 @@ const io: socketio.Server = require('socket.io')(server, {
 });
 
 app.get('/', (req, res) => {
-    res.sendFile(process.cwd() + '/public/index.html');
+    res.sendFile(process.cwd() + '/public/ja/index.html');
 });
 
 // socket.info を使えるようにする
