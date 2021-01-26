@@ -2,6 +2,9 @@ import Draw from './draw';
 import Mouse from './mouse';
 import Piece from './piece';
 
+/** 言語が英語である */
+const isEN: boolean = location.pathname === '/en/';
+
 // 入室～対戦相手待機
 
 let draw: Draw;
@@ -19,7 +22,22 @@ let muted: boolean = true;
 /** 入力フォームを非表示にし、canvas などを表示する */
 const initCanvas = () => {
     document.getElementById('settings').style.display = 'none';
-    draw = new Draw(canvas);
+    
+    const cw: number = document.documentElement.clientWidth;
+    const ch: number = document.documentElement.clientHeight;
+
+    if (cw < ch || ch < 720) {
+        document.getElementById('logo').style.display = 'none';
+        document.getElementById('info-icon').style.display = 'none';
+        document.getElementsByTagName('footer')[0].style.display = 'none';
+    }
+
+    const min: number = cw < ch ? cw : ch;
+    const cvsize: string = (0.9*min).toString();
+    canvas.setAttribute('width', cvsize);
+    canvas.setAttribute('height', cvsize);
+
+    draw = new Draw(canvas, isEN);
     doneInitCanvas = true;
     document.getElementById('game-container').style.display = 'flex';
 };
@@ -38,7 +56,8 @@ form.addEventListener('submit', (e: Event) => {
         roomId: data.get('room') as string,
         role: data.get('role') as ('play' | 'watch'),
         name: data.get('username') === ''
-            ? '名無し' : data.get('username') as string,
+            ? (isEN ? 'anonymous' : '名無し')
+            : data.get('username') as string,
     };
     myrole = info.role;
     socket.emit('enter room', info);
@@ -47,13 +66,17 @@ form.addEventListener('submit', (e: Event) => {
 // 部屋がいっぱいだったとき
 socket.on('room full', /** @param id 部屋番号 */ (id: string) => {
     const p: HTMLElement = document.getElementById('message');
-    p.innerText = `ルーム ${id} はいっぱいです。対戦者として参加することはできません。`;
+    p.innerText = isEN
+    ? `The room ${id} is full. You cannot join in as a player.`
+    : `ルーム ${id} はいっぱいです。対戦者として参加することはできません。`;
 });
 
 // 空室を観戦しようとしたとき
 socket.on('no room', /** @param id 部屋番号 */ (id: string)=> {
     const p: HTMLElement = document.getElementById('message');
-    p.innerText = `ルーム ${id} では対戦が行われていません。`;
+    p.innerText = isEN
+    ? `No player is present in the room ${id}.`
+    : `ルーム ${id} では対戦が行われていません。`;
 });
 
 // 対戦相手を待っているとき
@@ -170,7 +193,7 @@ socket.on('game',
     // 手番の表示
     // マウスイベント
     if (myturn) {
-        gameMessage.innerText = 'あなたの番です。';
+        gameMessage.innerText = isEN ? "It's your turn." : 'あなたの番です。';
         if (!muted) snd('move');
 
         mouse = new Mouse(canvas);
@@ -210,7 +233,7 @@ socket.on('game',
             }
         }
     } else {
-        gameMessage.innerText = '相手の番です。';
+        gameMessage.innerText = isEN ? "It's your opponent's turn." : '相手の番です。';
 
         canvas.onclick = () => {};
     }
@@ -234,7 +257,10 @@ socket.on('watch',
         const boardmap: Map<string, {color: 'R' | 'B', turn: 0 | 1}> = new Map(board);
         draw.board(boardmap, 0, first, second, true);
         draw.takenPieces(takenPieces, 0);
-        gameMessage.innerText = `${turn === 0 ? first : second} さんの番です。`;
+        const curPlayer: string = turn === 0 ? first : second;
+        gameMessage.innerText = isEN
+        ? `It's ${curPlayer}'s turn.`
+        : `${curPlayer} さんの番です。`;
         if (!muted) snd('move');
     }
 });
@@ -251,7 +277,7 @@ socket.on('tell winner to audience and first',
         (winner: string, board: [string, {color: 'R' | 'B', turn: 0 | 1}][],
         first: string, second: string,
         takenPieces: [{'R': number, 'B': number}, {'R': number, 'B': number}]) => {
-    gameMessage.innerText = `${winner} の勝ち！`;
+    gameMessage.innerText = isEN ? `${winner} won!` : `${winner} の勝ち！`;
     if (!muted) snd('win');
     if (myrole === 'play') {
         canvas.onclick = () => {
@@ -274,7 +300,7 @@ socket.on('tell winner to second',
        (winner: string, board: [string, {color: 'R' | 'B', turn: 0 | 1}][],
        first: string, second: string,
        takenPieces: [{'R': number, 'B': number}, {'R': number, 'B': number}]) => {
-    gameMessage.innerText = `${winner} の勝ち！`;
+    gameMessage.innerText = isEN ? `${winner} won!` : `${winner} の勝ち！`;
     if (!muted) snd('win');
     canvas.onclick = () => {
         draw.board(new Map(board), 1, first, second, true);
@@ -286,7 +312,9 @@ socket.on('tell winner to second',
 // 接続が切れたとき
 socket.on('player discon',
         /** @param name 接続が切れたプレイヤー名 */ (name: string) => {
-    alert(`${name}さんの接続が切れました。`);
+    alert(isEN
+        ? `${name}'s connection is closed.`
+        : `${name} さんの接続が切れました。`);
     location.reload();
 });
 
@@ -297,7 +325,9 @@ muteButton.onclick = () => {
     muteButton.src = muted
         ? '../static/svg/volume-up-solid.svg'
         : '../static/svg/volume-mute-solid.svg';
-    muteButton.title = muted ? 'ミュート' : 'ミュート解除';
+    muteButton.title = muted
+    ? (isEN ? 'Mute' : 'ミュート')
+    : (isEN ? 'Unmute' : 'ミュート解除');
     muted = !muted;
 };
 
@@ -342,7 +372,7 @@ socket.on('chat message',
         icon.className = 'chat-player-icon';
         icon.src = '../static/svg/ghost-solid.svg';
         icon.alt = 'player-icon';
-        icon.title = '対戦者';
+        icon.title = isEN ? 'Player' : '対戦者';
         nameSpan.appendChild(icon);
     }
 
