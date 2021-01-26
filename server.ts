@@ -13,7 +13,7 @@ const io: socketio.Server = require('socket.io')(server, {
 });
 
 app.get('/', (req, res) => {
-    res.sendFile(process.cwd() + '/public/index.html');
+    res.sendFile(process.cwd() + '/public/ja/index.html');
 });
 
 // socket.info を使えるようにする
@@ -136,6 +136,7 @@ io.on('connection', (socket: customSocket) => {
                 } else {
                     // 対戦者がすでに2人いる
                     socket.emit('room full', info.roomId);
+                    socket.info.role = 'watch';
                 }
             } else {
                 // 新たにルームを作成する

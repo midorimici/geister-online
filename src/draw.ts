@@ -3,6 +3,7 @@ import Piece from './piece';
 
 export default class Draw {
     private canvas: HTMLCanvasElement;
+    private isEN: boolean;
     private ctx: CanvasRenderingContext2D;
     private squareSize: number;
     private margin: number;
@@ -18,21 +19,9 @@ export default class Draw {
      * - 駒、矢印のパス定義
      * @param canvas canvas 要素
      */
-    constructor(canvas: HTMLCanvasElement) {
-        const cw: number = document.documentElement.clientWidth;
-        const ch: number = document.documentElement.clientHeight;
-
-        if (cw < ch || ch < 720) {
-            document.getElementById('logo').style.display = 'none';
-            document.getElementById('info-icon').style.display = 'none';
-            document.getElementsByTagName('footer')[0].style.display = 'none';
-        }
-
-        const min: number = cw < ch ? cw : ch;
-        const cvsize: string = (0.9*min).toString();
-        canvas.setAttribute('width', cvsize);
-        canvas.setAttribute('height', cvsize);
+    constructor(canvas: HTMLCanvasElement, isEN: boolean) {
         this.canvas = canvas;
+        this.isEN = isEN;
         this.ctx = canvas.getContext('2d');
         this.squareSize = canvas.width*3/20;
         this.margin = canvas.width/20;
@@ -71,11 +60,15 @@ export default class Draw {
         ctx.fillStyle = config.dark;
         ctx.font = `${textSize}px Meiryo`;
         if (obj === 'player') {
-            ctx.fillText('対戦相手の入室を待っています...',
+            ctx.fillText(this.isEN
+                ? 'Waiting for the opponent...'
+                : '対戦相手の入室を待っています...',
                 canvas.width/2 - (7.5)*textSize,
                 canvas.height/2);
         } else {
-            ctx.fillText('対戦者が駒を配置するのを待っています...',
+            ctx.fillText(this.isEN
+                ? 'Waiting for players placing pieces...'
+                : '対戦者が駒を配置するのを待っています...',
                 canvas.width/2 - (9.5)*textSize,
                 canvas.height/2);
         }
@@ -170,8 +163,12 @@ export default class Draw {
         const csize = this.canvas.width;
 
         const textSize: number = csize/40;
-        const text1: string = '駒の配置を決めてね（↓自分側　↑相手側）';
-        const text2: string = 'クリック（タップ）で悪いおばけ（赤）と良いおばけ（青）を切り替えるよ';
+        const text1: string = this.isEN
+        ? "Decide the initial positions of your pieces. (↓ your side   ↑ opponent's side)"
+        : '駒の配置を決めてね（↓自分側　↑相手側）';
+        const text2: string = this.isEN
+        ? 'Click (tap) the pieces to swap bad ghosts (red) and good ghosts (blue).'
+        : 'クリック（タップ）で悪いおばけ（赤）と良いおばけ（青）を切り替えるよ';
         ctx.fillStyle = config.dark;
         ctx.font = `${textSize}px Meiryo`;
         ctx.fillText(text1, csize/30, csize/30);

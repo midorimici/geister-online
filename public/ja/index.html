@@ -5,15 +5,19 @@
         <meta name='viewport' content='width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1, user-scalable=no'>
         <title>Geister Online</title>
         <meta name='description' content='ガイスターオンライン対戦'>
-        <link rel='icon' href='./static/logo/favicon.ico'>
-        <link rel='apple-touch-icon' sizes='180x180' href='./static/logo/apple-touch-icon.png'>
-        <link rel='manifest' href='./static/site.webmanifest'>
-        <link rel='stylesheet' href='./static/style.css'>
+        <link rel='icon' href='../static/logo/favicon.ico'>
+        <link rel='apple-touch-icon' sizes='180x180' href='../static/logo/apple-touch-icon.png'>
+        <link rel='manifest' href='../static/site.webmanifest'>
+        <link rel='stylesheet' href='../static/style.css'>
         <!-- Font Awesome Free 5.15.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) -->
     </head>
     <body>
         <section id='container'>
             <div id='settings'>
+                <ul id='lang'>
+                    <li><a href='../ja'>JA</a></li>
+                    <li><a href='../en'>EN</a></li>
+                </ul>
                 <p>ルーム番号と参加方法を指定してください。</p>
                 <form id='form'>
                     <div>
@@ -43,19 +47,19 @@
             </div>
         </section>
         <section id='game-container'>
-            <img id='mute-icon' src='./static/svg/volume-mute-solid.svg' alt='mute-button' title='ミュート解除'>
+            <img id='mute-icon' src='../static/svg/volume-mute-solid.svg' alt='mute-button' title='ミュート解除'>
             <p id='game-message'></p>
             <canvas id='canvas'></canvas>
             <div id='chat'>
-                <img id='chat-icon' src='./static/svg/comments-regular.svg' alt='chat-icon' title='チャット'>
+                <img id='chat-icon' src='../static/svg/comments-regular.svg' alt='chat-icon' title='チャット'>
                 <ul id='chat-messages'></ul>
                 <form id='chat-form'>
                     <input id='chat-input'>
-                    <img id='chat-send-icon' src='./static/svg/paper-plane-solid.svg' alt='chat-send-button' title='送信'>
+                    <img id='chat-send-icon' src='../static/svg/paper-plane-solid.svg' alt='chat-send-button' title='送信'>
                 </form>
             </div>
         </section>
-        <img id='logo' src='./static/logo/logo.png' width='160' alt='logo'>
+        <img id='logo' src='../static/logo/logo.png' width='160' alt='logo'>
         <footer>
             <a href='https://github.com/midorimici/geister-online' target='_blank' rel='noopener noreferrer'>
                 ソースコード
@@ -63,11 +67,11 @@
             <br>
             © 2021 みどりみち
         </footer>
-        <img id='info-icon' src='./static/svg/question-circle-regular.svg' alt='info' title='このアプリについて'>
+        <img id='info-icon' src='../static/svg/question-circle-regular.svg' alt='info' title='このアプリについて'>
         <div id='info-overlay'>
             <div id='info-mask'></div>
             <div id='info-description'>
-                <img id='close-icon' src='./static/svg/times-solid.svg' alt='close' title='閉じる'>
+                <img id='close-icon' src='../static/svg/times-solid.svg' alt='close' title='閉じる'>
                 <p>このアプリはオンラインでガイスターの対戦ができるものです。</p>
                 <strong>【対戦する】</strong>
                 <p>ルーム番号を指定して部屋をつくり、対戦者を待ちます。</p>
@@ -81,7 +85,7 @@
                 <p>プライベートな情報を書き込まないようにしてください。</p>
             </div>
         </div>
-        <script src='https://geister-online.herokuapp.com/socket.io/socket.io.js'></script>
-        <script src='./bundle.js'></script>
+        <script src='../socket.io/socket.io.js'></script>
+        <script src='../bundle.js'></script>
     </body>
 </html>
