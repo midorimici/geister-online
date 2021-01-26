@@ -3,12 +3,8 @@
   "version": "1.0.0",
   "description": "Socket.IO によるガイスター。",
   "dependencies": {
-    "cors": "^2.8.5",
     "express": "^4.17.1",
-    "socket.io": "^3.0.4",
-    "webpack": "^5.11.0",
-    "webpack-cli": "^4.2.0",
-    "webpack-node-externals": "^2.5.2"
+    "socket.io": "^3.0.4"
   },
   "scripts": {
     "start": "node main.js"
