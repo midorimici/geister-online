@@ -136,6 +136,7 @@ io.on('connection', (socket: customSocket) => {
                 } else {
                     // 対戦者がすでに2人いる
                     socket.emit('room full', info.roomId);
+                    socket.info.role = 'watch';
                 }
             } else {
                 // 新たにルームを作成する
