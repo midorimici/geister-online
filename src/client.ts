@@ -47,7 +47,7 @@ let myrole: 'play' | 'watch';
 
 // フォーム取得
 // production: https://geister-online.herokuapp.com
-const socket: SocketIOClient.Socket = io();
+const socket: SocketIOClient.Socket = io('https://geister-online.herokuapp.com');
 const form = document.getElementById('form') as HTMLFormElement;
 form.addEventListener('submit', (e: Event) => {
     e.preventDefault();
