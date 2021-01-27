@@ -68,6 +68,23 @@ footer {
     right: 1rem;
 }
 
+
+
+#back-to-home {
+    text-decoration: none;
+    font-weight: bold;
+    font-size: larger;
+    color: #333333;
+    border: solid 2px #333333;
+    border-radius: .4rem;
+    padding: .6rem;
+    transition: background-color .5s;
+    will-change: background-color;
+    &:hover {
+        background-color: #dddddd;
+    }
+}
+
 @import 'container';
 @import 'game_container';
 @import 'responsive';
