@@ -12,7 +12,6 @@ export default class Draw {
     private arrowPath: Path2D;
 
     /**
-     * - 画面のサイズによってロゴ、fotter など消去
      * - canvas サイズ設定
      * - context 作成
      * - プロパティ定義
