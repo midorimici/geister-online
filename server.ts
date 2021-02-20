@@ -24,36 +24,38 @@ interface customSocket extends socketio.Socket {
 }
 
 /** 部屋番号と部屋のデータの Map
- * @property player1 先に入室したプレイヤー
- * @property player2 後から入室したプレイヤー
+ * @property players 先に入室したプレイヤー、後から入室したプレイヤー
  * @property state 部屋の状態
  * @property ready 駒の配置の準備が完了したプレイヤー数
+ * @property orders 先手、後手の初期配置
+ * @property boards 先手、後手から見た盤面
+ * @property curTurn 現在のターン
+ * @property takenPieces それぞれが取った駒の色と数
+ * @property winner 勝者 0 - 先手, 1 - 後手
 */
 let rooms: Map<string, {
-    player1: {id: string, name: string, turn: 0 | 1},
-    player2: {id: string, name: string, turn: 0 | 1},
+    players: [{id: string, name: string}, {id: string, name: string}],
     state: string,
-    ready: number
+    ready: number,
+    orders: [Map<string, 'R' | 'B'>, Map<string, 'R' | 'B'>],
+    boards: [Map<string, {color: 'R' | 'B', turn: 0 | 1}>,
+        Map<string, {color: 'R' | 'B', turn: 0 | 1}>],
+    curTurn: 0 | 1,
+    takenPieces: [{'R': number, 'B': number}, {'R': number, 'B': number}],
+    winner: 0 | 1
 }> = new Map();
 /** 先手の初期配置 */
-let order1: Map<string, 'R' | 'B'>;
+//let order1: Map<string, 'R' | 'B'>;
 /** 後手の初期配置 */
-let order2: Map<string, 'R' | 'B'>;
+//let order2: Map<string, 'R' | 'B'>;
 /** 先手から見た盤面 */
-let board1: Map<string, {color: 'R' | 'B', turn: 0 | 1}>;
+//let board1: Map<string, {color: 'R' | 'B', turn: 0 | 1}>;
 /** 後手から見た盤面 */
-let board2: Map<string, {color: 'R' | 'B', turn: 0 | 1}>;
-/** 先手の名前と socket id */
-let first: {name: string, id: string};
-/** 後手の名前と socket id */
-let second: {name: string, id: string};
+//let board2: Map<string, {color: 'R' | 'B', turn: 0 | 1}>;
 /** 現在のターン */
-let curTurn: 0 | 1 = 0;
-/** それぞれが取った駒の色と数 */
-let takenPieces: [{'R': number, 'B': number}, {'R': number, 'B': number}]
-    = [{'R': 0, 'B': 0}, {'R': 0, 'B': 0}];
+//let curTurn: 0 | 1 = 0;
 /** 勝者 0 - 先手, 1 - 後手 */
-let winner: 0 | 1;
+//let winner: 0 | 1;
 
 /**
  * 初期盤面を生成する
@@ -123,16 +125,15 @@ io.on('connection', (socket: customSocket) => {
                 // 指定のルームに対戦者がいたとき
                 if (room.state === 'waiting opponent') {
                     // 対戦者が1人待機している
-                    room.player2 = {
+                    room.players[1] = {
                         id: socket.id,
-                        name: info.name,
-                        turn: 0
+                        name: info.name
                     };
                     room.state = 'waiting placing';
                     socket.join(info.roomId);
                     io.to(info.roomId).emit('wait placing');
-                    io.to(room.player1.id).emit('place pieces');
-                    io.to(room.player2.id).emit('place pieces');
+                    io.to(room.players[0].id).emit('place pieces');
+                    io.to(room.players[1].id).emit('place pieces');
                 } else {
                     // 対戦者がすでに2人いる
                     socket.emit('room full', info.roomId);
@@ -141,18 +142,23 @@ io.on('connection', (socket: customSocket) => {
             } else {
                 // 新たにルームを作成する
                 rooms.set(info.roomId, {
-                    player1: {
-                        id: socket.id,
-                        name: info.name,
-                        turn: 0
-                    },
-                    player2: {
-                        id: '',
-                        name: '',
-                        turn: 0
-                    },
+                    players: [
+                        {
+                            id: socket.id,
+                            name: info.name
+                        },
+                        {
+                            id: '',
+                            name: ''
+                        }
+                    ],
                     state: 'waiting opponent',
-                    ready: 0
+                    ready: 0,
+                    orders: [new Map(), new Map()],
+                    boards: [new Map(), new Map()],
+                    curTurn: 0,
+                    takenPieces: [{'R': 0, 'B': 0}, {'R': 0, 'B': 0}],
+                    winner: null
                 });
                 socket.join(info.roomId);
                 socket.emit('wait opponent');
@@ -171,11 +177,13 @@ io.on('connection', (socket: customSocket) => {
                 } else {
                     // 対戦者がすでに2人いて対戦中
                     socket.emit('watch',
-                        [...board1], first.name, second.name, curTurn, takenPieces);
-                    if (winner === 0 || winner === 1) {
+                        [...room.boards[0]], room.players[0].name, room.players[1].name,
+                            room.curTurn, room.takenPieces);
+                    if (room.winner === 0 || room.winner === 1) {
                         socket.emit('tell winner to audience and first',
-                            [first.name, second.name][winner], [...board1],
-                            first.name, second.name, takenPieces);
+                            [room.players[0].name, room.players[1].name][room.winner],
+                            [...room.boards[0]], room.players[0].name, room.players[1].name,
+                            room.takenPieces);
                     }
                 }
             } else {
@@ -197,46 +205,30 @@ io.on('connection', (socket: customSocket) => {
         room.ready = room.ready + 1;
         if (room.ready === 1) {
             // 先手
-            order1 = posmap;
-            if (room.player1.id === socket.id) {
-                io.to(room.player1.id).emit('wait placing');
+            room.orders[0] = posmap;
+            if (room.players[0].id === socket.id) {
+                io.to(room.players[0].id).emit('wait placing');
             } else {
-                io.to(room.player2.id).emit('wait placing');
+                io.to(room.players[1].id).emit('wait placing');
             }
         } else if (room.ready === 2) {
             // 後手
-            order2 = posmap;
-            if (room.player1.id === socket.id) {
-                room.player1.turn = 1;
-            } else {
-                room.player2.turn = 1;
+            room.orders[1] = posmap;
+            if (room.players[0].id === socket.id) {
+                room.players.reverse();
             }
             room.state = 'playing';
-            board1 = new Map(initBoard(order1, order2, 0));
-            board2 = new Map(initBoard(order1, order2, 1));
-            first = room.player1.turn === 0 ? {
-                name: room.player1.name,
-                id: room.player1.id
-            } : {
-                name: room.player2.name,
-                id: room.player2.id
-            };
-            second = room.player1.turn === 1 ? {
-                name: room.player1.name,
-                id: room.player1.id
-            } : {
-                name: room.player2.name,
-                id: room.player2.id
-            };
-            curTurn = 0;
-            takenPieces = [{'R': 0, 'B': 0}, {'R': 0, 'B': 0}];
-            winner = undefined;
+            room.boards[0] = new Map(initBoard(room.orders[0], room.orders[1], 0));
+            room.boards[1] = new Map(initBoard(room.orders[0], room.orders[1], 1));
             io.to(roomId).emit('watch',
-                [...board1], first.name, second.name, curTurn, takenPieces);
-            io.to(first.id).emit('game',
-                [...board1], 0, true, first.name, second.name, takenPieces);
-            io.to(second.id).emit('game',
-                [...board2], 1, false, first.name, second.name, takenPieces);
+                [...room.boards[0]], room.players[0].name, room.players[1].name, room.curTurn,
+                room.takenPieces);
+            io.to(room.players[0].id).emit('game',
+                [...room.boards[0]], 0, true, room.players[0].name, room.players[1].name,
+                room.takenPieces);
+            io.to(room.players[1].id).emit('game',
+                [...room.boards[1]], 1, false, room.players[0].name, room.players[1].name,
+                room.takenPieces);
         }
     });
 
@@ -249,13 +241,15 @@ io.on('connection', (socket: customSocket) => {
              */
             (turn: 0 | 1, origin: [number, number], dest: [number, number]) => {
         const roomId = socket.info.roomId;
-        let board = [board1, board2][turn];
-        let another = [board1, board2][(turn+1)%2];
+        const room = rooms.get(roomId);
+        let board = [room.boards[0], room.boards[1]][turn];
+        let another = [room.boards[0], room.boards[1]][(turn+1)%2];
         // 相手の駒を取ったとき
         if (board.has(String(dest)) && board.get(String(dest)).turn !== turn) {
             // 取った駒の色を記録する
-            takenPieces[turn][board.get(String(dest)).color] += 1;
+            room.takenPieces[turn][board.get(String(dest)).color] += 1;
         }
+        const takenPieces = room.takenPieces;
         // turn 目線のボードを更新する
         board.set(String(dest), board.get(String(origin)));
         board.delete(String(origin));
@@ -266,28 +260,32 @@ io.on('connection', (socket: customSocket) => {
         another.set(String(dest), another.get(String(origin)));
         another.delete(String(origin));
         // ターン交代
-        curTurn = (curTurn+1)%2 as 0 | 1;
+        room.curTurn = (room.curTurn+1)%2 as 0 | 1;
         // 勝敗判定
         if (winReq(takenPieces, Array.from(board.keys()), turn, true)) {
-            winner = turn;
+            room.winner = turn;
         } else if (winReq(takenPieces, Array.from(board.keys()), (turn+1)%2 as 0 | 1, false)) {
-            winner = (turn+1)%2 as 0 | 1;
+            room.winner = (turn+1)%2 as 0 | 1;
         }
+        const winner = room.winner;
         // 盤面データをクライアントへ
         io.to(roomId).emit('watch',
-            [...board1], first.name, second.name, curTurn, takenPieces);
-        io.to(first.id).emit('game',
-            [...board1], 0, curTurn === 0, first.name, second.name, takenPieces);
-        io.to(second.id).emit('game',
-            [...board2], 1, curTurn === 1, first.name, second.name, takenPieces);
+            [...room.boards[0]], room.players[0].name, room.players[1].name, room.curTurn,
+            takenPieces);
+        io.to(room.players[0].id).emit('game',
+            [...room.boards[0]], 0, room.curTurn === 0, room.players[0].name, room.players[1].name,
+            takenPieces);
+        io.to(room.players[1].id).emit('game',
+            [...room.boards[1]], 1, room.curTurn === 1, room.players[0].name, room.players[1].name,
+            takenPieces);
         // 勝者を通知する
         if (winner === 0 || winner === 1) {
             io.to(roomId).emit('tell winner to audience and first',
-                [first.name, second.name][winner], [...board1]
-                , first.name, second.name, takenPieces);
-            io.to(second.id).emit('tell winner to second',
-                [first.name, second.name][winner], [...board2]
-                , first.name, second.name, takenPieces);
+                [room.players[0].name, room.players[1].name][winner], [...room.boards[0]]
+                , room.players[0].name, room.players[1].name, takenPieces);
+            io.to(room.players[1].id).emit('tell winner to second',
+                [room.players[0].name, room.players[1].name][winner], [...room.boards[1]]
+                , room.players[0].name, room.players[1].name, takenPieces);
         }
     });
 
