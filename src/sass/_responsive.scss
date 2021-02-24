@@ -59,11 +59,13 @@
         margin: 0;
     }
 
-    #chat-icon {
-        margin-top: 1rem;
+    #chat {
+        height: calc(100vh - 110vw);
+        display: flex;
+        flex-direction: column;
     }
 
-    #chat-messages {
-        height: 60%;
+    #chat-icon {
+        margin-top: 1rem;
     }
 }
