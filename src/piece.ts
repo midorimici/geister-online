@@ -1,4 +1,4 @@
-import { Vec } from './config';
+import { Vec } from './vec';
 
 export default class Piece {
   color: 'R' | 'B';

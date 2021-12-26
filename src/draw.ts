@@ -1,4 +1,5 @@
-import config, { Vec } from './config';
+import { colors } from './config';
+import { Vec } from './vec';
 import Piece from './piece';
 
 export default class Draw {
@@ -43,7 +44,7 @@ export default class Draw {
 
   /** アイボリーで画面全体を塗りつぶす */
   private clearCanvas() {
-    this.ctx.fillStyle = config.ivory;
+    this.ctx.fillStyle = colors.ivory;
     this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
   }
 
@@ -56,7 +57,7 @@ export default class Draw {
     const canvas = this.canvas;
     const ctx = this.ctx;
     const textSize: number = canvas.width / 20;
-    ctx.fillStyle = config.dark;
+    ctx.fillStyle = colors.dark;
     ctx.font = `${textSize}px Meiryo`;
     if (obj === 'player') {
       ctx.fillText(
@@ -94,7 +95,7 @@ export default class Draw {
   private grid(coord: [number, number], col: number, row: number) {
     const ctx = this.ctx;
     const squareSize: number = this.squareSize;
-    ctx.strokeStyle = config.dark;
+    ctx.strokeStyle = colors.dark;
     ctx.lineWidth = 2;
     ctx.beginPath();
     for (let i: number = 0; i <= row; i++) {
@@ -148,7 +149,7 @@ export default class Draw {
     ctx.save();
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillStyle = config.dark;
+    ctx.fillStyle = colors.dark;
     ctx.fillText('OK', ...new Vec(size).div(2).add(coord).val());
     ctx.restore();
   }
@@ -169,7 +170,7 @@ export default class Draw {
     const text2: string = this.isEN
       ? 'Click (tap) the pieces to swap bad ghosts (red) and good ghosts (blue).'
       : 'クリック（タップ）で悪いおばけ（赤）と良いおばけ（青）を切り替えるよ';
-    ctx.fillStyle = config.dark;
+    ctx.fillStyle = colors.dark;
     ctx.font = `${textSize}px Meiryo`;
     ctx.fillText(text1, csize / 30, csize / 30);
     ctx.fillText(text2, csize / 30, csize / 30 + 2 * textSize);
@@ -182,7 +183,7 @@ export default class Draw {
     this.button([(csize * 5) / 6, (csize * 5) / 6], [csize / 8, csize / 12], disabled);
     for (let [k, v] of pos.entries()) {
       let [x, y] = k.split(',');
-      this.piece(v === 'R' ? config.red : config.blue, [+x, +y], false);
+      this.piece(v === 'R' ? colors.red : colors.blue, [+x, +y], false);
     }
   }
 
@@ -232,21 +233,21 @@ export default class Draw {
 
     // 駒
     for (let [pos, piece] of boardmap.entries()) {
-      const pieceColor = piece.color === 'R' ? config.red : config.blue;
+      const pieceColor = piece.color === 'R' ? colors.red : colors.blue;
       const pos_ = pos.split(',').map((e: string) => +e) as [number, number];
       if (turn === 0) {
         // 先手
-        this.piece(showAll || piece.turn === 0 ? pieceColor : config.grey, pos_, piece.turn === 1);
+        this.piece(showAll || piece.turn === 0 ? pieceColor : colors.grey, pos_, piece.turn === 1);
       } else {
         // 後手
-        this.piece(showAll || piece.turn === 1 ? pieceColor : config.grey, pos_, piece.turn === 0);
+        this.piece(showAll || piece.turn === 1 ? pieceColor : colors.grey, pos_, piece.turn === 0);
       }
     }
 
     // プレイヤー名
     const csize: number = this.canvas.width;
     const textSize = csize / 40;
-    ctx.fillStyle = config.dark;
+    ctx.fillStyle = colors.dark;
     ctx.font = `${textSize}px Meiryo`;
     ctx.fillText(turn === 1 ? second : first, (csize * 3) / 4, csize - textSize);
     ctx.fillText(turn === 1 ? first : second, (csize * 3) / 4, textSize);
@@ -278,7 +279,7 @@ export default class Draw {
           .val();
         ctx.beginPath();
         ctx.arc(...coord, this.pieceSize / 2, 0, 2 * Math.PI);
-        ctx.fillStyle = config.safe;
+        ctx.fillStyle = colors.safe;
         ctx.fill();
       }
     }
@@ -310,20 +311,20 @@ export default class Draw {
     // 先手が取った駒
     for (let i = 0; i < numbers[0]['R']; i++) {
       const coord: [number, number] = [(i + 1) * smallPieceSize, y1];
-      drawPiece(coord, config.red);
+      drawPiece(coord, colors.red);
     }
     for (let i = 0; i < numbers[0]['B']; i++) {
       const coord: [number, number] = [(i + 1 + numbers[0]['R']) * smallPieceSize, y1];
-      drawPiece(coord, config.blue);
+      drawPiece(coord, colors.blue);
     }
     // 後手が取った駒
     for (let i = 0; i < numbers[1]['R']; i++) {
       const coord: [number, number] = [(i + 1) * smallPieceSize, y2];
-      drawPiece(coord, config.red);
+      drawPiece(coord, colors.red);
     }
     for (let i = 0; i < numbers[1]['B']; i++) {
       const coord: [number, number] = [(i + 1 + numbers[1]['R']) * smallPieceSize, y2];
-      drawPiece(coord, config.blue);
+      drawPiece(coord, colors.blue);
     }
   }
 }
