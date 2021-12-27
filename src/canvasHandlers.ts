@@ -1,7 +1,8 @@
 import { isEN } from './config';
 import Draw from './draw';
-import { handlePiecePositionDecision } from './lib';
 import Mouse from './mouse';
+import Piece from './piece';
+import { handlePiecePositionDecision } from './lib';
 import { useIsMuted } from './states';
 
 let draw: Draw;
@@ -10,6 +11,8 @@ let mouse: Mouse;
 let doneInitCanvas: boolean = false;
 /** `canvas` element */
 const canvas = document.getElementById('canvas') as HTMLCanvasElement;
+/** A message element beside `canvas` */
+const gameMessage = document.getElementById('game-message');
 
 /**
  * Play audio.
@@ -24,7 +27,7 @@ const snd = (file: string) => {
   new Audio(`../static/sounds/${file}.wav`).play();
 };
 
-/** Hide input forms and show game container including canvas. */
+/** Hides input forms and shows game container including canvas. */
 const initCanvas = () => {
   document.getElementById('settings').style.display = 'none';
 
@@ -61,7 +64,7 @@ export const showWaitingPlacingScreen = () => {
   draw.waitingPlacing();
 };
 
-/** Display place pieces screen on the canvas and handle mouse events. */
+/** Displays place pieces screen on the canvas and handles mouse events. */
 export const handlePlacePiecesScreen = () => {
   if (!doneInitCanvas) {
     initCanvas();
@@ -111,6 +114,8 @@ export const handlePlacePiecesScreen = () => {
         }
       }
     }
+    // Update screen.
+    drawDisp();
     // Decide button
     if (
       mouse.onArea(
@@ -129,6 +134,69 @@ export const handlePlacePiecesScreen = () => {
         snd('forbid');
       }
     }
-    drawDisp();
   };
+};
+
+/** Handles screen events of the player during the game.
+ * @param board Board data.
+ * @param turn Whether the current user plays firstly or secondly.
+ * @param isMyTurn Whether the current turn is the current user's.
+ * @param players The names of the players.
+ * @param takenPieces Piece colors and numbers that each player has taken.
+ */
+export const handleGameScreen = (
+  board: Board,
+  turn: 0 | 1,
+  isMyTurn: boolean,
+  players: [string, string],
+  takenPieces: TakenPieces
+) => {
+  const boardMap: Map<string, { color: 'R' | 'B'; turn: 0 | 1 }> = new Map(Object.entries(board));
+  /** The position of the piece that is selected. */
+  let selectingPos: [number, number];
+  draw.board(boardMap, turn, ...players);
+  draw.takenPieces(takenPieces, turn);
+  // Show player's turn.
+  // Mouse event
+  if (isMyTurn) {
+    gameMessage.innerText = isEN ? "It's your turn." : 'あなたの番です。';
+    snd('move');
+
+    mouse = new Mouse(canvas);
+    canvas.onclick = (e: MouseEvent) => {
+      const sqPos = mouse.getCoord(e);
+      // When the user selected their own piece.
+      if (boardMap.has(String(sqPos)) && boardMap.get(String(sqPos)).turn === turn) {
+        selectingPos = sqPos;
+        const pieceData = Object.values(boardMap.get(String(sqPos))) as ['R' | 'B', 0 | 1];
+        const piece = new Piece(...pieceData);
+        // Draw destinations.
+        draw.board(boardMap, turn, ...players);
+        draw.dest(piece, selectingPos, boardMap);
+        draw.takenPieces(takenPieces, turn);
+      } else {
+        if (boardMap.has(String(selectingPos))) {
+          const pieceData = Object.values(boardMap.get(String(selectingPos))) as ['R' | 'B', 0 | 1];
+          const piece = new Piece(...pieceData);
+          // When the user selected a destination position.
+          if (piece.coveringSquares(selectingPos).some((e) => String(e) === String(sqPos))) {
+            // Move the piece.
+            boardMap.set(String(sqPos), boardMap.get(String(selectingPos)));
+            boardMap.delete(String(selectingPos));
+            snd('move');
+            // サーバへ移動データを渡す
+            // socket.emit('move piece', turn, selectingPos, sqPos);
+          }
+        }
+        // Update drawing board.
+        draw.board(boardMap, turn, ...players);
+        draw.takenPieces(takenPieces, turn);
+        selectingPos = null;
+      }
+    };
+  } else {
+    gameMessage.innerText = isEN ? "It's your opponent's turn." : '相手の番です。';
+
+    canvas.onclick = () => {};
+  }
 };

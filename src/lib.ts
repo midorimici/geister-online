@@ -10,8 +10,10 @@ import {
 } from 'firebase/database';
 import { db } from './firebase';
 import { isEN } from './config';
+import { initBoard } from './utils';
 import { showRoomEmptyMessage, showRoomFullMessage } from './messageHandlers';
 import {
+  handleGameScreen,
   handlePlacePiecesScreen,
   showWaitingPlacingScreen,
   showWaitingPlayerScreen,
@@ -102,7 +104,19 @@ export const handleEnterRoom = (role: Role, uname: string) => {
 export const handlePiecePositionDecision = (posmap: InitialPositionMap) => {
   const { playerId } = usePlayerId();
   const roomRef = getRoomRef();
-  set(child(roomRef, `initialPositions/${playerId}`), posmap).catch((err) => console.error(err));
+  set(child(roomRef, `initialPositions/${playerId}`), posmap)
+    .then(() => get(child(roomRef, 'initialPositions')))
+    .then((snapshot: DataSnapshot) => {
+      if (snapshot.exists()) {
+        const initPositions: InitialPositions = snapshot.val();
+        if (initPositions.filter(Boolean).length === 2) {
+          // If both players are ready, set the initial game board.
+          const boards: Boards = [initBoard(initPositions, 0), initBoard(initPositions, 1)];
+          return set(child(roomRef, 'boards'), boards);
+        }
+      }
+    })
+    .catch((err) => console.error(err));
 };
 
 /**
@@ -125,7 +139,20 @@ const listenRoomDataChange = (isPlayer: boolean) => {
 
   handleRoomValueChange(roomRef, 'initialPositions', (val) => {
     const initPositions: InitialPositions = val;
-    handleRoomInitPositionsChange(initPositions, isPlayer);
+    handleRoomInitPositionsChange(initPositions);
+  });
+
+  handleRoomValueChange(roomRef, 'boards', (val) => {
+    const boards: Boards = val;
+    let curTurn: PlayerId;
+    let takenPieces: TakenPieces;
+    get(roomRef)
+      .then((snapshot: DataSnapshot) => {
+        const info: RoomInfo = snapshot.val();
+        curTurn = info.curTurn;
+        takenPieces = info.takenPieces;
+      })
+      .then(() => handleRoomBoardsChange(boards, isPlayer, curTurn, takenPieces));
   });
 };
 
@@ -154,7 +181,7 @@ const handleRoomValueChange = (
 };
 
 /**
- * Handle process when the room state is changed.
+ * Handles process when the room state is changed.
  * @param state The current state of the room.
  * @param isPlayer Whether the user is joining as a player.
  */
@@ -186,21 +213,41 @@ const handleRoomStateChange = (state: RoomState, isPlayer: boolean) => {
   }
 };
 
-const handleRoomInitPositionsChange = (initPositions: InitialPositions, isPlayer: boolean) => {
+/**
+ * Handles process when the initial positions are changed.
+ * @param initPositions Initial piece positions of the players.
+ */
+const handleRoomInitPositionsChange = (initPositions: InitialPositions) => {
+  const { playerId } = usePlayerId();
   const readyPlayerCount = initPositions.filter(Boolean).length;
+  const isReady = playerId !== null && Boolean(initPositions[playerId]);
   // When one player has finished placing pieces.
-  if (readyPlayerCount === 1) {
-    if (isPlayer) {
-      showWaitingPlacingScreen();
-    }
-  }
-  // When both players have finished placing pieces.
-  else if (readyPlayerCount === 2) {
-    // TODO: Move to game screen
+  if (readyPlayerCount < 2 && isReady) {
+    showWaitingPlacingScreen();
   }
 };
 
-/** Remove data of the room when disconnected. */
+/**
+ * Handles process when the game boards are changed.
+ * @param boards The game boards.
+ * @param isPlayer Whether the user is joining as a player.
+ * @param curTurn The current turn.
+ * @param takenPieces Piece colors and numbers that each player has taken.
+ */
+const handleRoomBoardsChange = (
+  boards: Boards,
+  isPlayer: boolean,
+  curTurn: PlayerId,
+  takenPieces: TakenPieces
+) => {
+  const { playerId } = usePlayerId();
+  const { playerNames } = usePlayerNames();
+  if (isPlayer) {
+    handleGameScreen(boards[playerId], playerId, curTurn === playerId, playerNames, takenPieces);
+  }
+};
+
+/** Removes data of the room when disconnected. */
 const listenDisconnection = () => {
   const { roomId } = useRoomId();
   onDisconnect(ref(db, `rooms/${roomId}`)).remove();

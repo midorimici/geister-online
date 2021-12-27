@@ -8,9 +8,6 @@ import Piece from './piece';
 
 // 入室～対戦相手待機
 
-/** canvas 横のメッセージ */
-const gameMessage = document.getElementById('game-message');
-
 // フォーム取得
 // production: https://geister-online.herokuapp.com
 // const socket: SocketIOClient.Socket = io('https://geister-online.herokuapp.com');
@@ -23,80 +20,6 @@ addChatFormEventListener();
 // 駒配置
 
 // // ゲーム進行
-
-// // 対戦者の処理
-// socket.on(
-//   'game',
-//   /**
-//    * 対戦者側のゲーム処理
-//    * @param board 盤面データ
-//    * @param turn 自分が先手か後手か
-//    * @param myturn 現在自分のターンか
-//    * @param first 先手のプレイヤー名
-//    * @param second 後手のプレイヤー名
-//    * @param takenPieces それぞれが取った駒の色と数
-//    */
-//   (
-//     board: [string, { color: 'R' | 'B'; turn: 0 | 1 }][],
-//     turn: 0 | 1,
-//     myturn: boolean,
-//     first: string,
-//     second: string,
-//     takenPieces: [{ R: number; B: number }, { R: number; B: number }]
-//   ) => {
-//     const boardmap: Map<string, { color: 'R' | 'B'; turn: 0 | 1 }> = new Map(board);
-//     /** 選択中の駒の位置 */
-//     let selectingPos: [number, number];
-//     draw.board(boardmap, turn, first, second);
-//     draw.takenPieces(takenPieces, turn);
-//     // 手番の表示
-//     // マウスイベント
-//     if (myturn) {
-//       gameMessage.innerText = isEN ? "It's your turn." : 'あなたの番です。';
-//       if (!muted) snd('move');
-
-//       mouse = new Mouse(canvas);
-//       canvas.onclick = (e: MouseEvent) => {
-//         const sqPos = mouse.getCoord(e);
-//         if (boardmap.has(String(sqPos)) && boardmap.get(String(sqPos)).turn === turn) {
-//           // 自分の駒を選択したとき
-//           selectingPos = sqPos;
-//           const pieceData = Object.values(boardmap.get(String(sqPos))) as ['R' | 'B', 0 | 1];
-//           const piece = new Piece(...pieceData);
-//           // 行先を描画
-//           draw.board(boardmap, turn, first, second);
-//           draw.dest(piece, selectingPos, boardmap);
-//           draw.takenPieces(takenPieces, turn);
-//         } else {
-//           if (boardmap.has(String(selectingPos))) {
-//             const pieceData = Object.values(boardmap.get(String(selectingPos))) as [
-//               'R' | 'B',
-//               0 | 1
-//             ];
-//             const piece = new Piece(...pieceData);
-//             if (piece.coveringSquares(selectingPos).some((e) => String(e) === String(sqPos))) {
-//               // 行先を選択したとき
-//               // 駒の移動
-//               boardmap.set(String(sqPos), boardmap.get(String(selectingPos)));
-//               boardmap.delete(String(selectingPos));
-//               if (!muted) snd('move');
-//               // サーバへ移動データを渡す
-//               socket.emit('move piece', turn, selectingPos, sqPos);
-//             }
-//           }
-//           // 盤面描画更新
-//           draw.board(boardmap, turn, first, second);
-//           draw.takenPieces(takenPieces, turn);
-//           selectingPos = null;
-//         }
-//       };
-//     } else {
-//       gameMessage.innerText = isEN ? "It's your opponent's turn." : '相手の番です。';
-
-//       canvas.onclick = () => {};
-//     }
-//   }
-// );
 
 // // 観戦者の処理
 // socket.on(
