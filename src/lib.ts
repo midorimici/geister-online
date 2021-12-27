@@ -27,7 +27,7 @@ const getRoomRef = () => {
 };
 
 /**
- * Handle process when the user enters a room.
+ * Handles process when the user enters a room.
  * @param role Whether the user joins as a player or an audience.
  * @param uname The name of the user.
  */
@@ -37,12 +37,12 @@ export const handleEnterRoom = (role: Role, uname: string) => {
   const { setPlayerId } = usePlayerId();
 
   const roomRef = getRoomRef();
-  get(roomRef)
+  get(child(roomRef, 'state'))
     .then((snapshot: DataSnapshot) => {
       // When the room with the id already exists
       if (snapshot.exists()) {
-        const room: RoomInfo = snapshot.val();
-        const isWaitingOpponent = room.state === 'waiting opponent';
+        const state: RoomState = snapshot.val();
+        const isWaitingOpponent = state === 'waiting opponent';
         // Join as a player
         if (isJoiningAsPlayer) {
           // When a player is waiting
@@ -150,13 +150,16 @@ const listenRoomDataChange = (isPlayer: boolean) => {
     const boards: Boards = val;
     let curTurn: PlayerId;
     let takenPieces: TakenPieces;
-    get(roomRef)
-      .then((snapshot: DataSnapshot) => {
+    onValue(
+      roomRef,
+      (snapshot: DataSnapshot) => {
         const info: RoomInfo = snapshot.val();
         curTurn = info.curTurn;
         takenPieces = info.takenPieces;
-      })
-      .then(() => handleRoomBoardsChange(boards, isPlayer, curTurn, takenPieces));
+      },
+      { onlyOnce: true }
+    );
+    handleRoomBoardsChange(boards, isPlayer, curTurn, takenPieces);
   });
 };
 
