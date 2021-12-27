@@ -16,7 +16,7 @@ import {
   showWaitingPlacingScreen,
   showWaitingPlayerScreen,
 } from './canvasHandlers';
-import { usePlayerId, useRoomId } from './states';
+import { usePlayerId, usePlayerNames, useRoomId } from './states';
 
 const getRoomRef = () => {
   const { roomId } = useRoomId();
@@ -166,6 +166,13 @@ const handleRoomStateChange = (state: RoomState, isPlayer: boolean) => {
   }
   // When players is deciding places of pieces
   else if (state === 'placing pieces') {
+    const { setPlayerNames } = usePlayerNames();
+    get(child(getRoomRef(), 'players')).then((snapshot: DataSnapshot) => {
+      if (snapshot.exists()) {
+        const names: [string, string] = snapshot.val();
+        setPlayerNames(names);
+      }
+    });
     if (isPlayer) {
       handlePlacePiecesScreen();
     } else {

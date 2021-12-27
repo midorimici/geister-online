@@ -41,3 +41,14 @@ const setPlayerId = (newPlayerId: 0 | 1 | null) => {
 export const usePlayerId = () => {
   return { playerId, setPlayerId };
 };
+
+/** The names of the players. */
+let playerNames: [string, string];
+
+const setPlayerNames = (newPlayerNames: [string, string]) => {
+  playerNames = newPlayerNames;
+};
+
+export const usePlayerNames = () => {
+  return { playerNames, setPlayerNames };
+};
