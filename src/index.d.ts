@@ -8,15 +8,20 @@ declare type InitialPositionMap = Record<string, Color>;
 
 declare type InitialPositions = [InitialPositionMap, InitialPositionMap];
 
+declare type PlayerId = 0 | 1;
+
+declare type Board = Record<string, { color: Color; turn: PlayerId }>;
+
+declare type Boards = [Board, Board];
+
+declare type TakenPieces = [{ R: number; B: number }, { R: number; B: number }];
+
 declare type RoomInfo = {
   players: [string, string];
   state: RoomState;
   initialPositions: InitialPositions;
-  boards: [
-    Record<string, { color: Color; turn: 0 | 1 }>,
-    Record<string, { color: Color; turn: 0 | 1 }>
-  ];
-  curTurn: 0 | 1;
-  takenPieces: [{ R: number; B: number }, { R: number; B: number }];
-  winner: 0 | 1;
+  boards: Boards;
+  curTurn: PlayerId;
+  takenPieces: TakenPieces;
+  winner: PlayerId;
 };
