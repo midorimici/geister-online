@@ -146,12 +146,12 @@ export const handlePlacePiecesScreen = () => {
  */
 export const handleGameScreen = (
   board: Board,
-  turn: 0 | 1,
+  turn: PlayerId,
   isMyTurn: boolean,
   players: [string, string],
   takenPieces: TakenPieces
 ) => {
-  const boardMap: Map<string, { color: 'R' | 'B'; turn: 0 | 1 }> = new Map(Object.entries(board));
+  const boardMap: Map<string, { color: Color; turn: PlayerId }> = new Map(Object.entries(board));
   /** The position of the piece that is selected. */
   let selectingPos: [number, number];
   draw.board(boardMap, turn, ...players);
@@ -168,7 +168,7 @@ export const handleGameScreen = (
       // When the user selected their own piece.
       if (boardMap.has(String(sqPos)) && boardMap.get(String(sqPos)).turn === turn) {
         selectingPos = sqPos;
-        const pieceData = Object.values(boardMap.get(String(sqPos))) as ['R' | 'B', 0 | 1];
+        const pieceData = Object.values(boardMap.get(String(sqPos))) as [Color, PlayerId];
         const piece = new Piece(...pieceData);
         // Draw destinations.
         draw.board(boardMap, turn, ...players);
@@ -176,7 +176,7 @@ export const handleGameScreen = (
         draw.takenPieces(takenPieces, turn);
       } else {
         if (boardMap.has(String(selectingPos))) {
-          const pieceData = Object.values(boardMap.get(String(selectingPos))) as ['R' | 'B', 0 | 1];
+          const pieceData = Object.values(boardMap.get(String(selectingPos))) as [Color, PlayerId];
           const piece = new Piece(...pieceData);
           // When the user selected a destination position.
           if (piece.coveringSquares(selectingPos).some((e) => String(e) === String(sqPos))) {

@@ -158,7 +158,7 @@ export default class Draw {
    * @param pos 位置と色の Map
    * @param disabled ボタンを押せなくする
    */
-  decidePiecePlace(pos: Map<string, 'R' | 'B'>, disabled: boolean) {
+  decidePiecePlace(pos: Map<string, Color>, disabled: boolean) {
     this.clearCanvas();
     const ctx = this.ctx;
     const csize = this.canvas.width;
@@ -195,8 +195,8 @@ export default class Draw {
    * @param showAll すべての駒色を隠さず表示する
    */
   board(
-    boardmap: Map<string, { color: 'R' | 'B'; turn: 0 | 1 }>,
-    turn: 0 | 1,
+    boardmap: Map<string, { color: Color; turn: PlayerId }>,
+    turn: PlayerId,
     first: string,
     second: string,
     showAll: boolean = false
@@ -262,7 +262,7 @@ export default class Draw {
   dest(
     piece: Piece,
     pos: [number, number],
-    boardmap: Map<string, { color: 'R' | 'B'; turn: 0 | 1 }>
+    boardmap: Map<string, { color: Color; turn: PlayerId }>
   ) {
     const ctx = this.ctx;
     for (let dest of piece.coveringSquares(pos)) {
@@ -290,7 +290,7 @@ export default class Draw {
    * @param numbers それぞれが取った駒の色と数
    * @param turn 先手後手どちら目線か
    */
-  takenPieces(numbers: [{ R: number; B: number }, { R: number; B: number }], turn: 0 | 1) {
+  takenPieces(numbers: [{ R: number; B: number }, { R: number; B: number }], turn: PlayerId) {
     const ctx = this.ctx;
     const smallPieceSize = this.pieceSize / 6;
     const margin = this.margin;

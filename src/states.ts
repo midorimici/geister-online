@@ -32,9 +32,9 @@ export const useUserRole = () => {
 };
 
 /** Id of the current user. If the user is not a player, it should be null. */
-let playerId: 0 | 1 | null = null;
+let playerId: PlayerId | null = null;
 
-const setPlayerId = (newPlayerId: 0 | 1 | null) => {
+const setPlayerId = (newPlayerId: PlayerId | null) => {
   playerId = newPlayerId;
 };
 

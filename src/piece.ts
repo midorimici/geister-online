@@ -1,14 +1,14 @@
 import { Vec } from './vec';
 
 export default class Piece {
-  color: 'R' | 'B';
-  turn: 0 | 1;
+  color: Color;
+  turn: PlayerId;
 
   /**
    * @param color 駒色
    * @param turn 先手(0)後手(1)どちらの駒か
    */
-  constructor(color: 'R' | 'B', turn: 0 | 1) {
+  constructor(color: Color, turn: PlayerId) {
     this.color = color;
     this.turn = turn;
   }
