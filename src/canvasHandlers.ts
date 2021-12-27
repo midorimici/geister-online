@@ -2,7 +2,7 @@ import { isEN } from './config';
 import Draw from './draw';
 import Mouse from './mouse';
 import Piece from './piece';
-import { handlePiecePositionDecision } from './lib';
+import { handlePieceMove, handlePiecePositionDecision } from './lib';
 import { useIsMuted } from './states';
 
 let draw: Draw;
@@ -184,8 +184,7 @@ export const handleGameScreen = (
             boardMap.set(String(sqPos), boardMap.get(String(selectingPos)));
             boardMap.delete(String(selectingPos));
             snd('move');
-            // サーバへ移動データを渡す
-            // socket.emit('move piece', turn, selectingPos, sqPos);
+            handlePieceMove(turn, selectingPos, sqPos);
           }
         }
         // Update drawing board.
