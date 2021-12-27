@@ -1,8 +1,9 @@
+import { t } from '~/i18n/translation';
 import Draw from './game/draw';
 import Mouse from './game/mouse';
 import Piece from './game/piece';
 import { handlePieceMove, handlePiecePositionDecision } from './actions';
-import { isEN, useIsMuted } from './states';
+import { useIsMuted } from './states';
 
 let draw: Draw;
 let mouse: Mouse;
@@ -44,7 +45,7 @@ const initCanvas = () => {
   canvas.setAttribute('width', cvsize);
   canvas.setAttribute('height', cvsize);
 
-  draw = new Draw(canvas, isEN);
+  draw = new Draw(canvas);
   doneInitCanvas = true;
   document.getElementById('game-container').style.display = 'flex';
 };
@@ -158,7 +159,7 @@ export const handleGameScreen = (
   // Show player's turn.
   // Mouse event
   if (isMyTurn) {
-    gameMessage.innerText = isEN ? "It's your turn." : 'あなたの番です。';
+    gameMessage.innerText = t('isYourTurn');
     snd('move');
 
     mouse = new Mouse(canvas);
@@ -193,7 +194,7 @@ export const handleGameScreen = (
       }
     };
   } else {
-    gameMessage.innerText = isEN ? "It's your opponent's turn." : '相手の番です。';
+    gameMessage.innerText = t('isOpponentTurn');
 
     canvas.onclick = () => {};
   }
@@ -219,6 +220,6 @@ export const showGameScreenForAudience = (
   draw.board(boardMap, 0, ...players, true);
   draw.takenPieces(takenPieces, 0);
   const curPlayer: string = players[curTurn];
-  gameMessage.innerText = isEN ? `It's ${curPlayer}'s turn.` : `${curPlayer} さんの番です。`;
+  gameMessage.innerText = t('isPlayersTurn', curPlayer);
   snd('move');
 };

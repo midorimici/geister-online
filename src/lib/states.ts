@@ -1,6 +1,3 @@
-/** Whether the language is English. */
-export const isEN: boolean = location.pathname === '/en/';
-
 /** Whether it is muted. */
 let isMuted: boolean = true;
 

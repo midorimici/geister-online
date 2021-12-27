@@ -1,5 +1,6 @@
+import { t } from './i18n/translation';
 import { handleEnterRoom } from './lib/actions';
-import { isEN, useIsMuted, useRoomId, useUserRole } from './lib/states';
+import { useIsMuted, useRoomId, useUserRole } from './lib/states';
 
 export const addInfoButtonClickEventListener = () => {
   const infoBtn = document.getElementById('info-icon');
@@ -38,7 +39,7 @@ export const addMuteButtonClickEventListener = () => {
     muteButton.src = isMuted
       ? '../static/svg/volume-up-solid.svg'
       : '../static/svg/volume-mute-solid.svg';
-    muteButton.title = isMuted ? (isEN ? 'Mute' : 'ミュート') : isEN ? 'Unmute' : 'ミュート解除';
+    muteButton.title = t(isMuted ? 'mute' : 'unmute');
     setIsMuted(!isMuted);
   };
 };

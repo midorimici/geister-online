@@ -9,6 +9,7 @@ import {
   ref,
 } from 'firebase/database';
 import { db } from '~/firebase';
+import { t } from '~/i18n/translation';
 import {
   handleGameScreen,
   handlePlacePiecesScreen,
@@ -16,7 +17,7 @@ import {
   showWaitingPlacingScreen,
   showWaitingPlayerScreen,
 } from './canvasHandlers';
-import { isEN, usePlayerId, usePlayerNames, useRoomId } from './states';
+import { usePlayerId, usePlayerNames, useRoomId } from './states';
 
 export const getRoomRef = () => {
   const { roomId } = useRoomId();
@@ -80,7 +81,7 @@ const handleRoomValueChange = (
       callback(snapshot.val());
     } else if (reloadWhenEmpty) {
       // Reload the page when one of the player is disconnected.
-      alert(isEN ? `One player's connection is closed.` : '対戦者の接続が切れました。');
+      alert(t('disconnected'));
       location.reload();
     }
   });

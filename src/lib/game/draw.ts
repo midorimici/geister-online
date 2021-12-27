@@ -1,5 +1,6 @@
 import { Vec } from './vec';
 import Piece from './piece';
+import { t } from '~/i18n/translation';
 
 const colors = {
   ivory: 'rgb(240, 227, 206)',
@@ -12,7 +13,6 @@ const colors = {
 
 export default class Draw {
   private canvas: HTMLCanvasElement;
-  private isEN: boolean;
   private ctx: CanvasRenderingContext2D;
   private squareSize: number;
   private margin: number;
@@ -27,9 +27,8 @@ export default class Draw {
    * - 駒、矢印のパス定義
    * @param canvas canvas 要素
    */
-  constructor(canvas: HTMLCanvasElement, isEN: boolean) {
+  constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas;
-    this.isEN = isEN;
     this.ctx = canvas.getContext('2d');
     this.squareSize = (canvas.width * 3) / 20;
     this.margin = canvas.width / 20;
@@ -68,19 +67,9 @@ export default class Draw {
     ctx.fillStyle = colors.dark;
     ctx.font = `${textSize}px Meiryo`;
     if (obj === 'player') {
-      ctx.fillText(
-        this.isEN ? 'Waiting for the opponent...' : '対戦相手の入室を待っています...',
-        canvas.width / 2 - 7.5 * textSize,
-        canvas.height / 2
-      );
+      ctx.fillText(t('waitingOpponent'), canvas.width / 2 - 7.5 * textSize, canvas.height / 2);
     } else {
-      ctx.fillText(
-        this.isEN
-          ? 'Waiting for players placing pieces...'
-          : '対戦者が駒を配置するのを待っています...',
-        canvas.width / 2 - 9.5 * textSize,
-        canvas.height / 2
-      );
+      ctx.fillText(t('waitingPlacing'), canvas.width / 2 - 9.5 * textSize, canvas.height / 2);
     }
   }
 
@@ -172,12 +161,8 @@ export default class Draw {
     const csize = this.canvas.width;
 
     const textSize: number = csize / 40;
-    const text1: string = this.isEN
-      ? "Decide the initial positions of your pieces. (↓ your side   ↑ opponent's side)"
-      : '駒の配置を決めてね（↓自分側　↑相手側）';
-    const text2: string = this.isEN
-      ? 'Click (tap) the pieces to swap bad ghosts (red) and good ghosts (blue).'
-      : 'クリック（タップ）で悪いおばけ（赤）と良いおばけ（青）を切り替えるよ';
+    const text1: string = t('decidePositions');
+    const text2: string = t('clickToSwapColor');
     ctx.fillStyle = colors.dark;
     ctx.font = `${textSize}px Meiryo`;
     ctx.fillText(text1, csize / 30, csize / 30);

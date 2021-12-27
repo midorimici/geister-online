@@ -1,8 +1,9 @@
 import { child, DataSnapshot, get, onValue, set } from 'firebase/database';
+import { t } from '~/i18n/translation';
 import { initBoard, winReq } from './utils';
 import { showRoomEmptyMessage, showRoomFullMessage } from './messageHandlers';
 import { showWaitingPlacingScreen } from './canvasHandlers';
-import { isEN, usePlayerId } from './states';
+import { usePlayerId } from './states';
 import { getRoomRef, listenDisconnection, listenRoomDataChange } from './listeners';
 
 /**
@@ -11,7 +12,7 @@ import { getRoomRef, listenDisconnection, listenRoomDataChange } from './listene
  * @param uname The name of the user.
  */
 export const handleEnterRoom = (role: Role, uname: string) => {
-  const name = uname === '' ? (isEN ? 'anonymous' : '名無し') : uname;
+  const name = uname === '' ? t('anonymous') : uname;
   const isJoiningAsPlayer = role === 'play';
   const { setPlayerId } = usePlayerId();
 
