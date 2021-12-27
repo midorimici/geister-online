@@ -9,7 +9,6 @@ import {
   ref,
 } from 'firebase/database';
 import { db } from '~/firebase';
-import { isEN } from '~/config';
 import {
   handleGameScreen,
   handlePlacePiecesScreen,
@@ -17,7 +16,7 @@ import {
   showWaitingPlacingScreen,
   showWaitingPlayerScreen,
 } from './canvasHandlers';
-import { usePlayerId, usePlayerNames, useRoomId } from './states';
+import { isEN, usePlayerId, usePlayerNames, useRoomId } from './states';
 
 export const getRoomRef = () => {
   const { roomId } = useRoomId();

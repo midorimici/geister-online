@@ -1,9 +1,8 @@
 import { child, DataSnapshot, get, onValue, set } from 'firebase/database';
-import { isEN } from '~/config';
 import { initBoard, winReq } from './utils';
 import { showRoomEmptyMessage, showRoomFullMessage } from './messageHandlers';
 import { showWaitingPlacingScreen } from './canvasHandlers';
-import { usePlayerId } from './states';
+import { isEN, usePlayerId } from './states';
 import { getRoomRef, listenDisconnection, listenRoomDataChange } from './listeners';
 
 /**

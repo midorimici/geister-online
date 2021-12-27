@@ -1,6 +1,14 @@
-import { colors } from '~/config';
 import { Vec } from './vec';
 import Piece from './piece';
+
+const colors = {
+  ivory: 'rgb(240, 227, 206)',
+  dark: 'rgb(30, 30, 30)',
+  red: 'rgb(200, 0, 0)',
+  blue: 'rgb(0, 0, 200)',
+  grey: 'rgb(150, 150, 150)',
+  safe: 'rgb(121, 202, 68)',
+};
 
 export default class Draw {
   private canvas: HTMLCanvasElement;
