@@ -4,7 +4,6 @@ import {
   addInfoButtonClickEventListener,
   addMuteButtonClickEventListener,
 } from './events';
-import Piece from './piece';
 
 // 入室～対戦相手待機
 

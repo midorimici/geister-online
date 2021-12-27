@@ -1,4 +1,4 @@
-import { colors } from './config';
+import { colors } from '~/config';
 import { Vec } from './vec';
 import Piece from './piece';
 

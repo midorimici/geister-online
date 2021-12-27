@@ -1,8 +1,8 @@
-import { isEN } from './config';
-import Draw from './draw';
-import Mouse from './mouse';
-import Piece from './piece';
-import { handlePieceMove, handlePiecePositionDecision } from './lib';
+import { isEN } from '~/config';
+import Draw from './game/draw';
+import Mouse from './game/mouse';
+import Piece from './game/piece';
+import { handlePieceMove, handlePiecePositionDecision } from './actions';
 import { useIsMuted } from './states';
 
 let draw: Draw;

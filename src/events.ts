@@ -1,6 +1,6 @@
 import { isEN } from './config';
-import { handleEnterRoom } from './lib';
-import { useIsMuted, useRoomId, useUserRole } from './states';
+import { handleEnterRoom } from './lib/actions';
+import { useIsMuted, useRoomId, useUserRole } from './lib/states';
 
 export const addInfoButtonClickEventListener = () => {
   const infoBtn = document.getElementById('info-icon');

@@ -1,4 +1,4 @@
-import { isEN } from './config';
+import { isEN } from '~/config';
 import { useRoomId } from './states';
 
 const p: HTMLElement = document.getElementById('message');

@@ -19,6 +19,9 @@ module.exports = {
   },
   resolve: {
     extensions: ['.ts', '.js'],
+    alias: {
+      '~': path.join(__dirname, 'src'),
+    },
   },
   plugins: [new Dotenv()],
 };
