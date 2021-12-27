@@ -112,7 +112,10 @@ export const handlePiecePositionDecision = (posmap: InitialPositionMap) => {
         if (initPositions.filter(Boolean).length === 2) {
           // If both players are ready, set the initial game board.
           const boards: Boards = [initBoard(initPositions, 0), initBoard(initPositions, 1)];
-          return set(child(roomRef, 'boards'), boards);
+          return set(child(roomRef, 'boards'), boards).then(() => {
+            const newState: RoomState = 'playing game';
+            set(child(roomRef, 'state'), newState);
+          });
         }
       }
     })
