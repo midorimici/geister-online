@@ -200,3 +200,27 @@ export const handleGameScreen = (
     canvas.onclick = () => {};
   }
 };
+
+/**
+ * Displays the game screen for audience.
+ * @param board Board data.
+ * @param curTurn Current turn.
+ * @param players The names of the players.
+ * @param takenPieces Piece colors and numbers that each player has taken.
+ */
+export const showGameScreenForAudience = (
+  board: Board,
+  curTurn: PlayerId,
+  players: [string, string],
+  takenPieces: TakenPieces
+) => {
+  if (!doneInitCanvas) {
+    initCanvas();
+  }
+  const boardMap: Map<string, { color: Color; turn: PlayerId }> = new Map(Object.entries(board));
+  draw.board(boardMap, 0, ...players, true);
+  draw.takenPieces(takenPieces, 0);
+  const curPlayer: string = players[curTurn];
+  gameMessage.innerText = isEN ? `It's ${curPlayer}'s turn.` : `${curPlayer} さんの番です。`;
+  snd('move');
+};

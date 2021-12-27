@@ -15,6 +15,7 @@ import { showRoomEmptyMessage, showRoomFullMessage } from './messageHandlers';
 import {
   handleGameScreen,
   handlePlacePiecesScreen,
+  showGameScreenForAudience,
   showWaitingPlacingScreen,
   showWaitingPlayerScreen,
 } from './canvasHandlers';
@@ -211,8 +212,13 @@ const handleRoomStateChange = (state: RoomState, isPlayer: boolean) => {
     }
   }
   // When two players are in the room and the game is ongoing
-  else {
-    // TODO: Move to game screen
+  else if (!isPlayer) {
+    get(getRoomRef()).then((snapshot: DataSnapshot) => {
+      if (snapshot.exists()) {
+        const info: RoomInfo = snapshot.val();
+        showGameScreenForAudience(info.boards[0], info.curTurn, info.players, info.takenPieces);
+      }
+    });
   }
 };
 

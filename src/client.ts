@@ -21,38 +21,6 @@ addChatFormEventListener();
 
 // // ゲーム進行
 
-// // 観戦者の処理
-// socket.on(
-//   'watch',
-//   /**
-//    * 観戦者側のゲーム処理
-//    * @param board 盤面データ
-//    * @param first 先手のプレイヤー名
-//    * @param second 後手のプレイヤー名
-//    * @param turn 現在のターン
-//    * @param takenPieces それぞれが取った駒の色と数
-//    */
-//   (
-//     board: [string, { color: 'R' | 'B'; turn: 0 | 1 }][],
-//     first: string,
-//     second: string,
-//     turn: 0 | 1,
-//     takenPieces: [{ R: number; B: number }, { R: number; B: number }]
-//   ) => {
-//     if (myrole === 'watch') {
-//       if (!doneInitCanvas) {
-//         initCanvas();
-//       }
-//       const boardmap: Map<string, { color: 'R' | 'B'; turn: 0 | 1 }> = new Map(board);
-//       draw.board(boardmap, 0, first, second, true);
-//       draw.takenPieces(takenPieces, 0);
-//       const curPlayer: string = turn === 0 ? first : second;
-//       gameMessage.innerText = isEN ? `It's ${curPlayer}'s turn.` : `${curPlayer} さんの番です。`;
-//       if (!muted) snd('move');
-//     }
-//   }
-// );
-
 // // 勝者が決まったとき（観戦者と先手）
 // socket.on(
 //   'tell winner to audience and first',
