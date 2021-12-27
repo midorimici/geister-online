@@ -6,3 +6,6 @@ export const colors = {
   grey: 'rgb(150, 150, 150)',
   safe: 'rgb(121, 202, 68)',
 };
+
+/** 言語が英語である */
+export const isEN: boolean = location.pathname === '/en/';
