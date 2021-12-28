@@ -20,6 +20,17 @@ export const useRoomId = () => {
   return { roomId, setRoomId };
 };
 
+/** The name of the user. */
+let userName: string;
+
+const setUserName = (newUserName: string) => {
+  userName = newUserName;
+};
+
+export const useUserName = () => {
+  return { userName, setUserName };
+};
+
 /** Whether the user is player or audience. */
 let userRole: Role;
 
@@ -51,4 +62,15 @@ const setPlayerNames = (newPlayerNames: [string, string]) => {
 
 export const usePlayerNames = () => {
   return { playerNames, setPlayerNames };
+};
+
+/** Whether the chat list is initialized. */
+let chatInitialized: boolean = false;
+
+const setChatInitialized = (newChatInitialized: boolean) => {
+  chatInitialized = newChatInitialized;
+};
+
+export const useChatInitialized = () => {
+  return { chatInitialized, setChatInitialized };
 };

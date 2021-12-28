@@ -1,9 +1,9 @@
-import { child, DataSnapshot, get, onValue, set } from 'firebase/database';
+import { child, DataSnapshot, get, onValue, push, set } from 'firebase/database';
 import { t } from '~/i18n/translation';
 import { initBoard, winReq } from './utils';
 import { showRoomEmptyMessage, showRoomFullMessage } from './messageHandlers';
 import { showWaitingPlacingScreen } from './canvasHandlers';
-import { usePlayerId } from './states';
+import { usePlayerId, useUserName, useUserRole } from './states';
 import { getRoomRef, listenDisconnection, listenRoomDataChange } from './listeners';
 
 /**
@@ -15,6 +15,7 @@ export const handleEnterRoom = (role: Role, uname: string) => {
   const name = uname === '' ? t('anonymous') : uname;
   const isJoiningAsPlayer = role === 'play';
   const { setPlayerId } = usePlayerId();
+  const { setUserName } = useUserName();
 
   const roomRef = getRoomRef();
   get(child(roomRef, 'state'))
@@ -27,6 +28,7 @@ export const handleEnterRoom = (role: Role, uname: string) => {
         if (isJoiningAsPlayer) {
           // When a player is waiting
           if (isWaitingOpponent) {
+            setUserName(name);
             // Add new player's data
             set(child(roomRef, 'players/1'), name).catch((err) => console.error(err));
             setPlayerId(1);
@@ -45,6 +47,7 @@ export const handleEnterRoom = (role: Role, uname: string) => {
         }
         // Join as an audience
         else {
+          setUserName(name);
           listenRoomDataChange('preparing', isJoiningAsPlayer);
         }
       }
@@ -52,6 +55,7 @@ export const handleEnterRoom = (role: Role, uname: string) => {
       else {
         // Join as a player
         if (isJoiningAsPlayer) {
+          setUserName(name);
           // Create a new room
           const roomInfo: Partial<RoomInfo> = {
             players: [name, ''],
@@ -173,4 +177,19 @@ export const handlePieceMove = (
     },
     { onlyOnce: true }
   );
+};
+
+/**
+ * Handles process when a user send a chat message.
+ * @param message A message that the user is going to send.
+ */
+export const handleChatSend = (message: string) => {
+  const { userName } = useUserName();
+  const { userRole } = useUserRole();
+  const chatMessageData: ChatMessage = {
+    name: userName,
+    isPlayer: userRole === 'play',
+    message,
+  };
+  push(child(getRoomRef(), 'chatMessages'), chatMessageData).catch((err) => console.error(err));
 };

@@ -3,9 +3,12 @@ import {
   DatabaseReference,
   DataSnapshot,
   get,
+  limitToLast,
   off,
+  onChildAdded,
   onDisconnect,
   onValue,
+  query,
   ref,
 } from 'firebase/database';
 import { db } from '~/firebase';
@@ -18,7 +21,8 @@ import {
   showWaitingPlacingScreen,
   showWaitingPlayerScreen,
 } from './canvasHandlers';
-import { usePlayerId, usePlayerNames, useRoomId } from './states';
+import { addChatMessage } from './messageHandlers';
+import { useChatInitialized, usePlayerId, usePlayerNames, useRoomId } from './states';
 
 export const getRoomRef = () => {
   const { roomId } = useRoomId();
@@ -26,8 +30,10 @@ export const getRoomRef = () => {
 };
 
 /**
- * Handles process when the room data is changed, such as a new player joins, leaves and so on.
- * @param phase If this arg is `preparing`, it listens to the `state` field of the data. If this arg is `playing`, it listens to the `boards` and check for the winner.
+ * Handles process when the room data is changed, such as a new player joins, chat messages and so on.
+ * @param phase If this arg is `preparing`, it listens to the `state` field of the data.
+ *              If this arg is `playing`, it listens to the `boards` and check for the winner.
+ *              In both cases, it listens to the `chatMessages`.
  * @param isPlayer Whether the user is joining as a player.
  */
 export const listenRoomDataChange = (phase: 'preparing' | 'playing', isPlayer: boolean) => {
@@ -60,6 +66,22 @@ export const listenRoomDataChange = (phase: 'preparing' | 'playing', isPlayer: b
       );
     });
   }
+
+  const { chatInitialized, setChatInitialized } = useChatInitialized();
+
+  if (chatInitialized) {
+    return;
+  }
+
+  onChildAdded(query(child(roomRef, 'chatMessages'), limitToLast(20)), (snapshot: DataSnapshot) => {
+    if (!snapshot.exists()) {
+      return;
+    }
+
+    const message: ChatMessage = snapshot.val();
+    addChatMessage(message);
+  });
+  setChatInitialized(true);
 };
 
 /**

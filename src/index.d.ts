@@ -16,6 +16,12 @@ declare type Boards = [Board, Board];
 
 declare type TakenPieces = [{ R: number; B: number }, { R: number; B: number }];
 
+declare type ChatMessage = {
+  name: string;
+  isPlayer: boolean;
+  message: string;
+};
+
 declare type RoomInfo = {
   players: [string, string];
   state: RoomState;
@@ -24,4 +30,5 @@ declare type RoomInfo = {
   curTurn: PlayerId;
   takenPieces: TakenPieces;
   winner: PlayerId;
+  chatMessages: ChatMessage[];
 };

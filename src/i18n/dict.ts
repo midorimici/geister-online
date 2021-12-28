@@ -51,6 +51,10 @@ export default {
     en: `$1$ won!`,
     ja: `$1$ の勝ち！`,
   },
+  player: {
+    en: 'Player',
+    ja: '対戦者',
+  },
   disconnected: {
     en: `One player's connection is closed.`,
     ja: '対戦者の接続が切れました。',

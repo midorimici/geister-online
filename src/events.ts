@@ -1,5 +1,5 @@
 import { t } from './i18n/translation';
-import { handleEnterRoom } from './lib/actions';
+import { handleChatSend, handleEnterRoom } from './lib/actions';
 import { useIsMuted, useRoomId, useUserRole } from './lib/states';
 
 export const addInfoButtonClickEventListener = () => {
@@ -46,20 +46,22 @@ export const addMuteButtonClickEventListener = () => {
 
 export const addChatFormEventListener = () => {
   const chatForm = document.getElementById('chat-form') as HTMLFormElement;
-  const chatInput = document.getElementById('chat-input') as HTMLInputElement;
   const chatSendButton = document.getElementById('chat-send-icon');
   chatForm.addEventListener('submit', (e: Event) => {
     e.preventDefault();
-    if (chatInput.value) {
-      // socket.emit('chat message', chatInput.value);
-      chatInput.value = '';
-    }
+    sendMessage();
   });
 
   chatSendButton.onclick = () => {
-    if (chatInput.value) {
-      // socket.emit('chat message', chatInput.value);
-      chatInput.value = '';
-    }
+    sendMessage();
   };
+};
+
+const sendMessage = () => {
+  const chatInput = document.getElementById('chat-input') as HTMLInputElement;
+  const message = chatInput.value;
+  if (message) {
+    handleChatSend(message);
+    chatInput.value = '';
+  }
 };
