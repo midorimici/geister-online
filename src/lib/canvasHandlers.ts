@@ -223,3 +223,30 @@ export const showGameScreenForAudience = (
   gameMessage.innerText = t('isPlayersTurn', curPlayer);
   snd('move');
 };
+
+/** Handles screen events of the user after the game has finished.
+ * @param winner The name of the winner.
+ * @param playerId Whether the player played firstly or secondly. This should be null if the user is audience.
+ * @param board Board data.
+ * @param players The names of the players.
+ * @param takenPieces Piece colors and numbers that each player has taken.
+ */
+export const handleResultScreen = (
+  winner: string,
+  playerId: PlayerId | null,
+  board: Board,
+  players: [string, string],
+  takenPieces: TakenPieces
+) => {
+  gameMessage.innerText = t('winner', winner);
+  snd('win');
+  if (playerId === null) {
+    return;
+  }
+
+  canvas.onclick = () => {
+    draw.board(new Map(Object.entries(board)), playerId, ...players, true);
+    draw.takenPieces(takenPieces, playerId);
+    canvas.onclick = () => {};
+  };
+};

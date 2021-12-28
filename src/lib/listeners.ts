@@ -13,6 +13,7 @@ import { t } from '~/i18n/translation';
 import {
   handleGameScreen,
   handlePlacePiecesScreen,
+  handleResultScreen,
   showGameScreenForAudience,
   showWaitingPlacingScreen,
   showWaitingPlayerScreen,
@@ -26,14 +27,13 @@ export const getRoomRef = () => {
 
 /**
  * Handles process when the room data is changed, such as a new player joins, leaves and so on.
- * @param target The field of data to listen.
+ * @param phase If this arg is `preparing`, it listens to the `state` field of the data. If this arg is `playing`, it listens to the `boards` and check for the winner.
  * @param isPlayer Whether the user is joining as a player.
  */
-export const listenRoomDataChange = (target: keyof RoomInfo, isPlayer: boolean) => {
-  const { roomId } = useRoomId();
-  const roomRef = ref(db, `rooms/${roomId}`);
+export const listenRoomDataChange = (phase: 'preparing' | 'playing', isPlayer: boolean) => {
+  const roomRef = getRoomRef();
 
-  if (target === 'state') {
+  if (phase === 'preparing') {
     handleRoomValueChange(
       roomRef,
       'state',
@@ -43,18 +43,18 @@ export const listenRoomDataChange = (target: keyof RoomInfo, isPlayer: boolean) 
       },
       true
     );
-  } else if (target === 'boards') {
+  } else if (phase === 'playing') {
     handleRoomValueChange(roomRef, 'boards', (val) => {
       const boards: Boards = val;
-      let curTurn: PlayerId;
-      let takenPieces: TakenPieces;
       onValue(
         roomRef,
         (snapshot: DataSnapshot) => {
           const info: RoomInfo = snapshot.val();
-          curTurn = info.curTurn;
-          takenPieces = info.takenPieces;
-          handleRoomBoardsChange(boards, isPlayer, curTurn, takenPieces);
+          handleRoomBoardsChange(boards, isPlayer, info.curTurn, info.takenPieces);
+          const winner: PlayerId = info.winner;
+          if (winner !== undefined) {
+            handleRoomWinnerChange(winner, info.boards, info.takenPieces);
+          }
         },
         { onlyOnce: true }
       );
@@ -121,8 +121,7 @@ const handleRoomStateChange = (state: RoomState, isPlayer: boolean) => {
         const { setPlayerNames } = usePlayerNames();
         const info: RoomInfo = snapshot.val();
         setPlayerNames(info.players);
-        showGameScreenForAudience(info.boards[0], info.curTurn, info.players, info.takenPieces);
-        listenRoomDataChange('boards', false);
+        listenRoomDataChange('playing', false);
       }
     });
   }
@@ -150,8 +149,20 @@ const handleRoomBoardsChange = (
   }
 };
 
+/**
+ * Handles process when the winner is changed.
+ * @param winnerId The player id of the winner.
+ * @param boards The game boards.
+ * @param takenPieces Piece colors and numbers that each player has taken.
+ */
+const handleRoomWinnerChange = (winnerId: PlayerId, boards: Boards, takenPieces: TakenPieces) => {
+  const { playerId } = usePlayerId();
+  const { playerNames } = usePlayerNames();
+  handleResultScreen(playerNames[winnerId], playerId, boards[playerId], playerNames, takenPieces);
+  off(getRoomRef());
+};
+
 /** Removes data of the room when disconnected. */
 export const listenDisconnection = () => {
-  const { roomId } = useRoomId();
-  onDisconnect(ref(db, `rooms/${roomId}`)).remove();
+  onDisconnect(getRoomRef()).remove();
 };

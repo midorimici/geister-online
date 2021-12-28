@@ -47,6 +47,10 @@ export default {
     en: `It's $1$'s turn.`,
     ja: `$1$ さんの番です。`,
   },
+  winner: {
+    en: `$1$ won!`,
+    ja: `$1$ の勝ち！`,
+  },
   disconnected: {
     en: `One player's connection is closed.`,
     ja: '対戦者の接続が切れました。',

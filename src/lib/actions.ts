@@ -36,7 +36,7 @@ export const handleEnterRoom = (role: Role, uname: string) => {
             // Setup disconnection event listener
             listenDisconnection();
             // Setup room state change event listener
-            listenRoomDataChange('state', isJoiningAsPlayer);
+            listenRoomDataChange('preparing', isJoiningAsPlayer);
           }
           // When two players are already in the room
           else {
@@ -45,7 +45,7 @@ export const handleEnterRoom = (role: Role, uname: string) => {
         }
         // Join as an audience
         else {
-          listenRoomDataChange('state', isJoiningAsPlayer);
+          listenRoomDataChange('preparing', isJoiningAsPlayer);
         }
       }
       // When the room does not exist
@@ -67,7 +67,7 @@ export const handleEnterRoom = (role: Role, uname: string) => {
           // Setup disconnection event listener
           listenDisconnection();
           // Setup room state change event listener
-          listenRoomDataChange('state', isJoiningAsPlayer);
+          listenRoomDataChange('preparing', isJoiningAsPlayer);
         }
         // Join as an audience
         else {
@@ -105,7 +105,7 @@ export const handlePiecePositionDecision = (posmap: InitialPositionMap) => {
         }
       }
     })
-    .then(() => listenRoomDataChange('boards', true))
+    .then(() => listenRoomDataChange('playing', true))
     .catch((err) => console.error(err));
 };
 
@@ -123,7 +123,7 @@ export const handlePieceMove = (
   const roomRef = getRoomRef();
   onValue(
     roomRef,
-    (snapshot: DataSnapshot) => {
+    async (snapshot: DataSnapshot) => {
       if (!snapshot.exists()) {
         return;
       }
@@ -136,7 +136,7 @@ export const handlePieceMove = (
       if (Object.keys(myBoard).includes(String(dest)) && myBoard[String(dest)].turn !== turn) {
         // Record taken piece.
         takenPieces[turn][myBoard[String(dest)].color]++;
-        set(child(roomRef, 'takenPieces'), takenPieces).catch((err) => console.error(err));
+        await set(child(roomRef, 'takenPieces'), takenPieces).catch((err) => console.error(err));
       }
 
       // Update game board seen from the current user.
@@ -148,14 +148,9 @@ export const handlePieceMove = (
       // Update game board seen from the opponent.
       anotherBoard[String(dest)] = anotherBoard[String(origin)];
       delete anotherBoard[String(origin)];
-      // Set new boards
-      const newBoards: Boards = [null, null];
-      newBoards[turn] = myBoard;
-      newBoards[1 - turn] = anotherBoard;
-      set(child(roomRef, 'boards'), newBoards).catch((err) => console.error(err));
 
       // Switch the turn.
-      set(child(roomRef, 'curTurn'), 1 - info.curTurn).catch((err) => console.error(err));
+      await set(child(roomRef, 'curTurn'), 1 - info.curTurn).catch((err) => console.error(err));
 
       // Judge the winner.
       let winner: PlayerId | null = null;
@@ -164,9 +159,17 @@ export const handlePieceMove = (
       } else if (winReq(takenPieces, Object.keys(myBoard), (1 - turn) as PlayerId, false)) {
         winner = (1 - turn) as PlayerId;
       }
+
+      // Set the winner.
       if (winner !== null) {
-        set(child(roomRef, 'winner'), winner).catch((err) => console.error(err));
+        await set(child(roomRef, 'winner'), winner).catch((err) => console.error(err));
       }
+
+      // Set new boards.
+      const newBoards: Boards = [null, null];
+      newBoards[turn] = myBoard;
+      newBoards[1 - turn] = anotherBoard;
+      set(child(roomRef, 'boards'), newBoards).catch((err) => console.error(err));
     },
     { onlyOnce: true }
   );
