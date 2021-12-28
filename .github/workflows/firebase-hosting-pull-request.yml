@@ -9,8 +9,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - run: npm i
-      - run: npm run b
+      - name: Create .env file
+        run: echo "${{ secrets.ENV_VARS }}" > .env
+      - name: Install deps
+        run: npm i
+      - name: Build app
+        run: npm run b
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: '${{ secrets.GITHUB_TOKEN }}'
