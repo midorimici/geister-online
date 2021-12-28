@@ -8,18 +8,18 @@
     />
     <title>Geister Online 👻</title>
     <meta name="description" content="Play Geister Online" />
-    <link rel="icon" href="../static/logo/favicon.ico" />
-    <link rel="apple-touch-icon" sizes="180x180" href="../static/logo/apple-touch-icon.png" />
-    <link rel="manifest" href="../static/site.webmanifest" />
-    <link rel="stylesheet" href="../static/style.css" />
+    <link rel="icon" href="./static/logo/favicon.ico" />
+    <link rel="apple-touch-icon" sizes="180x180" href="./static/logo/apple-touch-icon.png" />
+    <link rel="manifest" href="./static/site.webmanifest" />
+    <link rel="stylesheet" href="./static/style.css" />
     <!-- Font Awesome Free 5.15.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) -->
   </head>
   <body>
     <section id="container">
       <div id="settings">
         <ul id="lang">
-          <li><a href="../ja">JA</a></li>
-          <li><a href="../en">EN</a></li>
+          <li><a href="./ja">JA</a></li>
+          <li><a href="./en">EN</a></li>
         </ul>
         <p>Select the room id and the way to join in.</p>
         <form id="form">
@@ -60,27 +60,27 @@
     <section id="game-container">
       <img
         id="mute-icon"
-        src="../static/svg/volume-mute-solid.svg"
+        src="./static/svg/volume-mute-solid.svg"
         alt="mute-button"
         title="Unmute"
       />
       <p id="game-message"></p>
       <canvas id="canvas"></canvas>
       <div id="chat">
-        <img id="chat-icon" src="../static/svg/comments-regular.svg" alt="chat-icon" title="Chat" />
+        <img id="chat-icon" src="./static/svg/comments-regular.svg" alt="chat-icon" title="Chat" />
         <ul id="chat-messages"></ul>
         <form id="chat-form">
           <input id="chat-input" />
           <img
             id="chat-send-icon"
-            src="../static/svg/paper-plane-solid.svg"
+            src="./static/svg/paper-plane-solid.svg"
             alt="chat-send-button"
             title="Submit"
           />
         </form>
       </div>
     </section>
-    <img id="logo" src="../static/logo/logo.png" width="160" alt="logo" />
+    <img id="logo" src="./static/logo/logo.png" width="160" alt="logo" />
     <footer>
       <a
         href="https://github.com/midorimici/geister-online"
@@ -94,14 +94,14 @@
     </footer>
     <img
       id="info-icon"
-      src="../static/svg/question-circle-regular.svg"
+      src="./static/svg/question-circle-regular.svg"
       alt="info"
       title="About this app"
     />
     <div id="info-overlay">
       <div id="info-mask"></div>
       <div id="info-description">
-        <img id="close-icon" src="../static/svg/times-solid.svg" alt="close" title="Close" />
+        <img id="close-icon" src="./static/svg/times-solid.svg" alt="close" title="Close" />
         <p>You can play Geister online in this app.</p>
         <strong>[PLAY]</strong>
         <p>After selecting a room id and making a room, wait for your opponent.</p>
@@ -115,6 +115,6 @@
         <p>Beware that you do not write private information.</p>
       </div>
     </div>
-    <script src="../bundle.js"></script>
+    <script src="./bundle.js"></script>
   </body>
 </html>
