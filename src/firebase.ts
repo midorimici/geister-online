@@ -1,5 +1,10 @@
 import { initializeApp } from 'firebase/app';
-import { getAuth, signInAnonymously } from 'firebase/auth';
+import {
+  browserSessionPersistence,
+  getAuth,
+  setPersistence,
+  signInAnonymously,
+} from 'firebase/auth';
 import { getDatabase } from 'firebase/database';
 
 const firebaseConfig = {
@@ -18,4 +23,8 @@ export const db = getDatabase(app);
 
 // Sign in anonymously
 const auth = getAuth(app);
-signInAnonymously(auth).catch((err) => console.error(err));
+setPersistence(auth, browserSessionPersistence)
+  .then(() => {
+    return signInAnonymously(auth).catch((err) => console.error(err));
+  })
+  .catch((err) => console.error(err));
