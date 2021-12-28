@@ -23,5 +23,5 @@ module.exports = {
       '~': path.join(__dirname, 'src'),
     },
   },
-  plugins: [new Dotenv()],
+  plugins: [new Dotenv({ systemvars: true })],
 };
