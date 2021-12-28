@@ -1,4 +1,13 @@
-import { child, DataSnapshot, get, onValue, push, set } from 'firebase/database';
+import {
+  child,
+  DataSnapshot,
+  get,
+  limitToLast,
+  onValue,
+  push,
+  query,
+  set,
+} from 'firebase/database';
 import { t } from '~/i18n/translation';
 import { initBoard, winReq } from './utils';
 import { showRoomEmptyMessage, showRoomFullMessage } from './messageHandlers';
@@ -191,5 +200,20 @@ export const handleChatSend = (message: string) => {
     isPlayer: userRole === 'play',
     message,
   };
-  push(child(getRoomRef(), 'chatMessages'), chatMessageData).catch((err) => console.error(err));
+  const chatRef = child(getRoomRef(), 'chatMessages');
+  // Add a new message.
+  push(chatRef, chatMessageData).catch((err) => console.error(err));
+  // Pick up only latest 100 messages to limit all messages up to 100.
+  onValue(
+    query(chatRef, limitToLast(100)),
+    (snapshot: DataSnapshot) => {
+      if (!snapshot.exists()) {
+        return;
+      }
+
+      const messages: ChatMessage[] = snapshot.val();
+      set(chatRef, messages).catch((err) => console.error(err));
+    },
+    { onlyOnce: true }
+  );
 };
