@@ -1,11 +1,7 @@
 import dict from './dict';
 
 /** Whether the language is English. */
-const isEN: boolean =
-  document.cookie
-    ?.split('; ')
-    .find((row: string) => row.startsWith('firebase-language-override'))
-    ?.split('=')[1] !== 'ja';
+const isEN: boolean = document.documentElement.lang === 'en';
 
 export const t = (key: keyof typeof dict, arg?: any): string => {
   let value = dict[key][isEN ? 'en' : 'ja'];
