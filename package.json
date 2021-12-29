@@ -14,10 +14,8 @@
     "webpack-cli": "^4.4.0"
   },
   "scripts": {
-    "start": "node dist/main.js",
     "b": "npx webpack",
     "bw": "npx webpack --watch",
-    "cs": "npx webpack && node dist/main.js",
     "sass": "npx node-sass src/sass/main.scss public/static/style.css --output-style compressed --watch"
   },
   "author": "mici",
